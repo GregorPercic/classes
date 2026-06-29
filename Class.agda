@@ -1,6 +1,7 @@
 open import Data.Empty renaming (⊥ to 𝟘)
 open import Data.Nat
 open import Data.Fin
+open import Data.Product
 
 module Class where
   Ctx = ℕ
@@ -24,8 +25,12 @@ module Class where
     _≈_ : term Γ → term Γ → formula Γ
     _∈_ : term Γ → term Γ → formula Γ
     _∧_ : formula Γ → formula Γ → formula Γ
+    _⇔_ : formula Γ → formula Γ → formula Γ
     ¬_ : formula Γ → formula Γ
     all : formula (extend Γ) → formula Γ
+
+  exists-f : ∀ {Γ} → formula (extend Γ) → formula Γ
+  exists-f φ = ¬ (all (¬ φ))
 
   mutual
     data Term (C : Set) (Γ : Ctx) : Set where
@@ -48,6 +53,7 @@ module Class where
   inj-formula (t ≈ u) = (inj-term t) ≈ (inj-term u)
   inj-formula (t ∈ u) = (inj-term t) ∈ (inj-term u)
   inj-formula (ϕ ∧ ψ) = (inj-formula ϕ) ∧ (inj-formula ψ)
+  inj-formula (ϕ ⇔ ψ) = (inj-formula ϕ) ⇔ (inj-formula ψ)
   inj-formula (¬ ϕ) = ¬ inj-formula ϕ
   inj-formula (all ϕ) = all (inj-formula ϕ)
 
@@ -118,6 +124,9 @@ module Class where
   lift-T-Act : ∀ {C Γ} → Term₀ Γ → Term C Γ
   lift-T-Act t = ActT (λ ()) t
 
+  exists : ∀ {C Γ} → Formula C (extend Γ) → Formula C Γ
+  exists Φ = ¬ (all (¬ Φ))
+
   record Theory : Set₁ where
     field
       thy-idx : Set -- axiom names
@@ -151,9 +160,9 @@ module Class where
   thy-ctx CT class∈class = 0
   thy-ctx CT class≈class = 0
 
-  thy-axi CT (set∈class n Γ y Φ) = {!   !}
-  thy-axi CT class∈class = {!   !}
-  thy-axi CT class≈class = {!   !}
+  thy-axi CT (set∈class n Γ y Φ) = svar y ∈ class Φ ⇔ actF (subst₀ (svar y)) Φ
+  thy-axi CT class∈class = cvar A ∈ cvar B ⇔ exists (svar zero ≈ cvar A ∧ svar zero ∈ cvar B) -- perhaps a bad formulation
+  thy-axi CT class≈class = cvar A ≈ cvar B ⇔ all (svar zero ∈ cvar A ⇔ svar zero ∈ cvar B)
 
   -- The notion of proof: maybe notation "p : T ⊢ ϕ" means p is a proof of Φ in T
   data Proof (T : Theory) {C : Set} : {Γ : Ctx} → Formula C Γ → Set where
@@ -166,17 +175,17 @@ module Class where
     refl : ∀ {Γ} {t : Term C Γ} → Proof T (t ≈ t)
 
     ∧-intro :
-      ∀ {Γ} {ϕ ψ : Formula C Γ} →
-      Proof T ϕ →
-      Proof T ψ →
+      ∀ {Γ} {Φ Ψ : Formula C Γ} →
+      Proof T Φ →
+      Proof T Ψ →
       ---------------
-      Proof T (ϕ ∧ ψ)
+      Proof T (Φ ∧ Ψ)
 
     all-elim :
-      ∀ {Γ} {ϕ : Formula C (extend Γ)} {t : term Γ} →
-      Proof T (all ϕ) →
+      ∀ {Γ} {Φ : Formula C (extend Γ)} {t : term Γ} →
+      Proof T (all Φ) →
       ---------------------------
-      Proof T (actF (subst₀ t) ϕ)
+      Proof T (actF (subst₀ t) Φ)
 
   actP : ∀ {T C Γ Δ} {Φ : Formula C Γ} (ρ : subst Γ Δ) → Proof T Φ → Proof T (actF ρ Φ)
   actP ρ p = {!!}
@@ -185,10 +194,24 @@ module Class where
   ActP σ p = {!!}
 
   elim : ∀ {Γ} → Formula 𝟘 Γ → formula Γ
-  elim Φ = {!!}
+  elim (svar x ≈ svar y) = svar x ≈ svar y
+  elim (svar x ≈ class Φ) = {!   !} -- all (svar zero ∈ svar (suc x) ⇔ elim Φ) -- ?
+  elim (class Φ ≈ svar x) = {!   !} -- all (elim Φ ⇔ svar zero ∈ svar (suc x)) -- ?
+  elim (class Φ ≈ class Ψ) = all (elim Φ ⇔ elim Ψ)
+  elim (svar x ∈ svar y) = svar x ∈ svar y
+  elim (svar x ∈ class Φ) = elim (actF (subst₀ (svar x)) Φ) -- ?
+  elim (class Φ ∈ svar x) = {!   !}
+  elim (class Φ ∈ class Ψ) = {!  !}
+  elim (Φ ∧ Ψ) = elim Φ ∧ elim Ψ
+  elim (Φ ⇔ Ψ) = elim Φ ⇔ elim Ψ
+  elim (¬ Φ) = ¬ (elim Φ)
+  elim (all Φ) = all (elim Φ) -- ?
 
   main-theorem : ∀ {Γ} (Φ : Formula 𝟘 Γ) → Proof CT (Φ ⇔ (inj-formula (elim Φ)))
   main-theorem Φ = {!!}
 
-  corollary : ∀ C {Γ} (Φ : Formula C Γ) (σ : Subst C 𝟘) → Proof CT (ActF σ Φ ⇔ inj-formula (elim (ActF σ Φ)))
-  corollary C Φ σ  = main-theorem (ActF σ Φ)
+  eliminability : ∀ C {Γ} (Φ : Formula C Γ) (σ : Subst C 𝟘) → Proof CT (ActF σ Φ ⇔ inj-formula (elim (ActF σ Φ)))
+  eliminability C Φ σ  = main-theorem (ActF σ Φ)
+
+  corollary : ∀ C {Γ} (Φ : Formula C Γ) (σ : Subst C 𝟘) → ∃[ φ ] Proof CT (ActF σ Φ ⇔ inj-formula φ)
+  corollary C Φ σ = elim (ActF σ Φ) , eliminability C Φ σ
