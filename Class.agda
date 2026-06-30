@@ -78,13 +78,13 @@ module Class where
       sbs-cls : C → Term D Δ
       sbs-set : Var Γ → term Δ
 
-  lift-term : ∀ {Γ} → term Γ → term (extend Γ)
-  lift-term (svar x) = svar (inject₁ x)
+  extend-term : ∀ {Γ} → term Γ → term (extend Γ)
+  extend-term (svar x) = svar (suc x)
 
   -- is this correct?
   extend-subst : ∀ {Γ Δ} → subst Γ Δ → subst (extend Γ) (extend Δ)
   extend-subst ρ zero = svar zero
-  extend-subst ρ (suc x) = lift-term (ρ x)
+  extend-subst ρ (suc x) = extend-term (ρ x)
 
   mutual
     actT : ∀ {C : Set} {Γ Δ} → subst Γ Δ → Term C Γ → Term C Δ
@@ -93,8 +93,8 @@ module Class where
     actT ρ (class Φ) = class (actF (extend-subst ρ) Φ) -- need to skip bound variable x in { x | Φ }
 
     actF : ∀ {C : Set} {Γ Δ} → subst Γ Δ → Formula C Γ → Formula C Δ
-    actF ρ (t ≈ t') = (actT ρ t) ≈ (actT ρ t')
-    actF ρ (t ∈ t') = (actT ρ t) ∈ (actT ρ t')
+    actF ρ (t ≈ u) = (actT ρ t) ≈ (actT ρ u)
+    actF ρ (t ∈ u) = (actT ρ t) ∈ (actT ρ u)
     actF ρ (Φ ∧ Ψ) = (actF ρ Φ) ∧ (actF ρ Ψ)
     actF ρ (Φ ⇔ Ψ) = (actF ρ Φ) ⇔ (actF ρ Ψ)
     actF ρ (¬ Φ) = ¬ (actF ρ Φ)
@@ -114,8 +114,8 @@ module Class where
     ActT σ (class Φ) = class (ActF σ Φ)
 
     ActF : ∀ {C D : Set} {Γ} → Subst C D → Formula C Γ → Formula D Γ
-    ActF σ (t ≈ t') = (ActT σ t) ≈ (ActT σ t)
-    ActF σ (t ∈ t') = (ActT σ t) ∈ (ActT σ t)
+    ActF σ (t ≈ u) = (ActT σ t) ≈ (ActT σ u)
+    ActF σ (t ∈ u) = (ActT σ t) ∈ (ActT σ u)
     ActF σ (Φ ∧ Ψ) = (ActF σ Φ) ∧ (ActF σ Ψ)
     ActF σ (Φ ⇔ Ψ) = (ActF σ Φ) ⇔ (ActF σ Ψ)
     ActF σ (¬ Φ) = ¬ (ActF σ Φ)
@@ -124,6 +124,9 @@ module Class where
   lift-T-Act : ∀ {C Γ} → Term₀ Γ → Term C Γ
   lift-T-Act t = ActT (λ ()) t
 
+  _[_] : ∀ {Γ C} → Formula C (extend Γ) → term Γ → Formula C Γ
+  Φ [ t ] = actF (subst₀ t) Φ
+ 
   exists : ∀ {C Γ} → Formula C (extend Γ) → Formula C Γ
   exists Φ = ¬ (all (¬ Φ))
 
@@ -160,7 +163,7 @@ module Class where
   thy-ctx CT class∈class = 0
   thy-ctx CT class≈class = 0
 
-  thy-axi CT (set∈class n Γ y Φ) = svar y ∈ class Φ ⇔ actF (subst₀ (svar y)) Φ
+  thy-axi CT (set∈class n Γ y Φ) = svar y ∈ class Φ ⇔ Φ [ svar y ]
   thy-axi CT class∈class = cvar A ∈ cvar B ⇔ exists (svar zero ≈ cvar A ∧ svar zero ∈ cvar B) -- perhaps a bad formulation
   thy-axi CT class≈class = cvar A ≈ cvar B ⇔ all (svar zero ∈ cvar A ⇔ svar zero ∈ cvar B)
 
@@ -185,7 +188,7 @@ module Class where
       ∀ {Γ} {Φ : Formula C (extend Γ)} {t : term Γ} →
       Proof T (all Φ) →
       ---------------------------
-      Proof T (actF (subst₀ t) Φ)
+      Proof T (Φ [ t ])
 
   actP : ∀ {T C Γ Δ} {Φ : Formula C Γ} (ρ : subst Γ Δ) → Proof T Φ → Proof T (actF ρ Φ)
   actP ρ p = {!!}
@@ -199,7 +202,7 @@ module Class where
   elim (class Φ ≈ svar x) = {!   !} -- all (elim Φ ⇔ svar zero ∈ svar (suc x)) -- ?
   elim (class Φ ≈ class Ψ) = all (elim Φ ⇔ elim Ψ)
   elim (svar x ∈ svar y) = svar x ∈ svar y
-  elim (svar x ∈ class Φ) = elim (actF (subst₀ (svar x)) Φ) -- ?
+  elim (svar x ∈ class Φ) = elim (Φ [ svar x ]) -- ?
   elim (class Φ ∈ svar x) = {!   !}
   elim (class Φ ∈ class Ψ) = {!  !}
   elim (Φ ∧ Ψ) = elim Φ ∧ elim Ψ
