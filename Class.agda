@@ -29,8 +29,8 @@ module Class where
     ¬_ : formula Γ → formula Γ
     all : formula (extend Γ) → formula Γ
 
-  exists-f : ∀ {Γ} → formula (extend Γ) → formula Γ
-  exists-f φ = ¬ (all (¬ φ))
+  exists-formula : ∀ {Γ} → formula (extend Γ) → formula Γ
+  exists-formula φ = ¬ (all (¬ φ))
 
   mutual
     data Term (C : Set) (Γ : Ctx) : Set where
@@ -196,15 +196,21 @@ module Class where
   ActP : ∀ {T C D Γ} {Φ : Formula C Γ} (σ : Subst C D) → Proof T Φ → Proof T (ActF σ Φ)
   ActP σ p = {!!}
 
+  subst-suc : ∀ {Γ} → subst Γ (extend Γ)
+  subst-suc x = svar (suc x)
+
+  extend-Term : ∀ {Γ C} → Term C Γ → Term C (extend Γ)
+  extend-Term t = actT subst-suc t
+
   elim : ∀ {Γ} → Formula 𝟘 Γ → formula Γ
   elim (svar x ≈ svar y) = svar x ≈ svar y
-  elim (svar x ≈ class Φ) = {!   !} -- all (svar zero ∈ svar (suc x) ⇔ elim Φ) -- ?
-  elim (class Φ ≈ svar x) = {!   !} -- all (elim Φ ⇔ svar zero ∈ svar (suc x)) -- ?
+  elim (svar x ≈ class Φ) = all (svar zero ∈ svar (suc x) ⇔ elim Φ) -- ?
+  elim (class Φ ≈ svar x) = all (elim Φ ⇔ svar zero ∈ svar (suc x)) -- ?
   elim (class Φ ≈ class Ψ) = all (elim Φ ⇔ elim Ψ)
   elim (svar x ∈ svar y) = svar x ∈ svar y
   elim (svar x ∈ class Φ) = elim (Φ [ svar x ]) -- ?
-  elim (class Φ ∈ svar x) = {!   !}
-  elim (class Φ ∈ class Ψ) = {!  !}
+  elim (class Φ ∈ svar x) = exists-formula (elim (svar zero ≈ extend-Term (class Φ)) ∧ svar zero ∈ svar (suc x))
+  elim (class Φ ∈ class Ψ) = exists-formula (elim (svar zero ≈ extend-Term (class Φ)) ∧ elim Ψ)
   elim (Φ ∧ Ψ) = elim Φ ∧ elim Ψ
   elim (Φ ⇔ Ψ) = elim Φ ⇔ elim Ψ
   elim (¬ Φ) = ¬ (elim Φ)
