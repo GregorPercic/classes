@@ -40,7 +40,15 @@ module Class where
     all : formula (extend Γ) → formula Γ
 
   actR-formula : ∀ {Γ Δ} → Ren Γ Δ → formula Γ → formula Δ
-  actR-formula r ϕ = {!!}
+  actR-formula r (t ≈ u) = actR-term r t ≈ actR-term r u
+  actR-formula r (t ∈ u) = actR-term r t ∈ actR-term r u
+  actR-formula r (φ ∧ ψ) = actR-formula r φ ∧ actR-formula r ψ
+  actR-formula r (φ ⇔ ψ) = actR-formula r φ ⇔ actR-formula r ψ
+  actR-formula r (¬ φ) = ¬ (actR-formula r φ)
+  actR-formula r (all φ) = all (actR-formula (extend-Ren r) φ)
+
+  extend-formula : ∀ {Γ} → formula Γ → formula (extend Γ)
+  extend-formula = actR-formula suc
 
   some : ∀ {Γ} → formula (extend Γ) → formula Γ
   some φ = ¬ (all (¬ φ))
@@ -66,7 +74,12 @@ module Class where
     actR-Term r (class Φ) = class (actR-Formula (extend-Ren r) Φ)
 
     actR-Formula : ∀ {C Γ Δ} → Ren Γ Δ → Formula C Γ → Formula C Δ
-    actR-Formula r Φ = {!!}
+    actR-Formula r (t ≈ u) = actR-Term r t ≈ actR-Term r u
+    actR-Formula r (t ∈ u) = actR-Term r t ∈ actR-Term r u
+    actR-Formula r (Φ ∧ Ψ) = actR-Formula r Φ ∧ actR-Formula r Ψ
+    actR-Formula r (Φ ⇔ Ψ) = actR-Formula r Φ ⇔ actR-Formula r Ψ
+    actR-Formula r (¬ Φ) = ¬ (actR-Formula r Φ)
+    actR-Formula r (all Φ) = all (actR-Formula (extend-Ren r) Φ)
 
   inj-term : ∀ {Γ C} → term Γ → Term C Γ
   inj-term (svar x) = svar x
@@ -94,9 +107,6 @@ module Class where
   subst : Ctx → Ctx → Set
   subst Γ Δ = Var Γ → term Δ
 
-  actf : ∀ {Γ Δ} → subst Γ Δ → formula Γ → formula Δ
-  actf ρ ϕ = {!!}
-
   -- General substitution
   record Sbs (C : Set) (Γ : Ctx) (D : Set) (Δ : Ctx) : Set where
     field
@@ -110,6 +120,14 @@ module Class where
   extend-subst : ∀ {Γ Δ} → subst Γ Δ → subst (extend Γ) (extend Δ)
   extend-subst ρ zero = svar zero
   extend-subst ρ (suc x) = extend-term (ρ x)
+
+  actf : ∀ {Γ Δ} → subst Γ Δ → formula Γ → formula Δ
+  actf ρ (svar x ≈ svar y) = ρ x ≈ ρ y
+  actf ρ (svar x ∈ svar y) = ρ x ∈ ρ y
+  actf ρ (φ ∧ ψ) = actf ρ φ ∧ actf ρ ψ
+  actf ρ (φ ⇔ ψ) = actf ρ φ ⇔ actf ρ ψ
+  actf ρ (¬ φ) = ¬ (actf ρ φ)
+  actf ρ (all φ) = all (actf (extend-subst ρ) φ)
 
   mutual
     actT : ∀ {C : Set} {Γ Δ} → subst Γ Δ → Term C Γ → Term C Δ
@@ -129,17 +147,21 @@ module Class where
   subst₀ t zero = t
   subst₀ t (suc x) = svar x
 
-  lift-T-act : ∀ {C Γ} → Term C ⟨⟩ → Term C Γ
-  lift-T-act t = actT (λ ()) t
+  -- useless, because we are using renamings instead
+  -- lift-T-act : ∀ {C Γ} → Term C ⟨⟩ → Term C Γ
+  -- lift-T-act t = actT (λ ()) t
 
   compRS : ∀ {Γ Δ C D} → Ren Γ Δ → Subst Γ C D → Subst Δ C D
   compRS r σ x = actR-Term r (σ x)
+
+  extend-Subst : ∀ {Γ C D} → Subst Γ C D → Subst (extend Γ) C D
+  extend-Subst σ = compRS suc σ
 
   mutual
     ActT : ∀ {C D : Set} {Γ} → Subst Γ C D → Term C Γ → Term D Γ
     ActT σ (svar x) = svar x
     ActT σ (cvar c) = σ c
-    ActT σ (class Φ) = class (ActF (λ z → svar zero) Φ) --  class (ActF σ Φ)
+    ActT σ (class Φ) = class (ActF (extend-Subst σ) Φ)
 
     ActF : ∀ {C D : Set} {Γ} → Subst  Γ C D → Formula C Γ → Formula D Γ
     ActF σ (t ≈ u) = (ActT σ t) ≈ (ActT σ u)
@@ -147,13 +169,17 @@ module Class where
     ActF σ (Φ ∧ Ψ) = (ActF σ Φ) ∧ (ActF σ Ψ)
     ActF σ (Φ ⇔ Ψ) = (ActF σ Φ) ⇔ (ActF σ Ψ)
     ActF σ (¬ Φ) = ¬ (ActF σ Φ)
-    ActF {Γ = Γ} σ (all Φ) = all (ActF (λ z → svar zero) Φ)
+    ActF {Γ = Γ} σ (all Φ) = all (ActF (extend-Subst σ) Φ)
 
-  lift-T-Act : ∀ {C Γ} → Term₀ Γ → Term C Γ
-  lift-T-Act t = ActT (λ ()) t
+  -- useless, because we are using renamings instead
+  -- lift-T-Act : ∀ {C Γ} → Term₀ Γ → Term C Γ
+  -- lift-T-Act t = ActT (λ ()) t
 
   _[_] : ∀ {Γ C} → Formula C (extend Γ) → term Γ → Formula C Γ
   Φ [ t ] = actF (subst₀ t) Φ
+
+  _⟦_⟧ : ∀ {Γ} → formula (extend Γ) → term Γ → formula Γ
+  φ ⟦ t ⟧ = actf (subst₀ t) φ
 
   exists : ∀ {C Γ} → Formula C (extend Γ) → Formula C Γ
   exists Φ = ¬ (all (¬ Φ))
@@ -224,25 +250,26 @@ module Class where
   ActP : ∀ {T C D Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) → Proof T Φ → Proof T (ActF σ Φ)
   ActP σ p = {!!}
 
-  subst-suc : ∀ {Γ} → subst Γ (extend Γ)
-  subst-suc x = svar (suc x)
+  -- useless, because we are using renamings instead
+  -- subst-suc : ∀ {Γ} → subst Γ (extend Γ)
+  -- subst-suc x = svar (suc x)
 
   extend-Term : ∀ {Γ C} → Term C Γ → Term C (extend Γ)
-  extend-Term t = actR-Term suc t
+  extend-Term = actR-Term suc
 
-  elim : ∀ {Γ} → Formula 𝟘 Γ → formula Γ
+  elim : ∀ {Γ} → Formula₀ Γ → formula Γ
   elim (svar x ≈ svar y) = svar x ≈ svar y
-  elim (svar x ≈ class Φ) = all (svar zero ∈ svar (suc x) ⇔ elim Φ) -- ?
-  elim (class Φ ≈ svar x) = all (elim Φ ⇔ svar zero ∈ svar (suc x)) -- ?
+  elim (svar x ≈ class Φ) = all (svar zero ∈ svar (suc x) ⇔ elim Φ)
+  elim (class Φ ≈ svar x) = all (elim Φ ⇔ svar zero ∈ svar (suc x))
   elim (class Φ ≈ class Ψ) = all (elim Φ ⇔ elim Ψ)
   elim (svar x ∈ svar y) = svar x ∈ svar y
-  elim (svar x ∈ class Φ) =  actf (λ { zero → svar x ; (suc y) → svar y}) (elim Φ)
-  elim (class Φ ∈ svar x) = {! some (elim (svar zero ≈ extend-Term (class Φ)) ∧ svar zero ∈ svar (suc x)) !}
-  elim (class Φ ∈ class Ψ) = some ((all (svar zero ∈ svar (suc zero) ⇔ actR-formula suc (elim Φ))) ∧ elim Ψ)  -- some (elim (svar zero ≈ extend-Term (class Φ)) ∧ elim Ψ)
+  elim (svar x ∈ class Φ) =  (elim Φ) ⟦ svar x ⟧
+  elim (class Φ ∈ svar x) = some ((all (svar zero ∈ svar (suc zero) ⇔ extend-formula (elim Φ))) ∧ svar zero ∈ svar (suc x))
+  elim (class Φ ∈ class Ψ) = some ((all (svar zero ∈ svar (suc zero) ⇔ extend-formula (elim Φ))) ∧ elim Ψ)
   elim (Φ ∧ Ψ) = elim Φ ∧ elim Ψ
   elim (Φ ⇔ Ψ) = elim Φ ⇔ elim Ψ
   elim (¬ Φ) = ¬ (elim Φ)
-  elim (all Φ) = all (elim Φ) -- ?
+  elim (all Φ) = all (elim Φ)
 
   main-theorem : ∀ {Γ} (Φ : Formula 𝟘 Γ) → Proof CT (Φ ⇔ (inj-formula (elim Φ)))
   main-theorem Φ = {!!}
