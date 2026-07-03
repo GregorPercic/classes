@@ -47,8 +47,15 @@ module Class where
   actR-formula r (¬ φ) = ¬ (actR-formula r φ)
   actR-formula r (all φ) = all (actR-formula (extend-Ren r) φ)
 
+  Ren-bind-zero : ∀ {Γ} → Ren Γ (extend Γ)
+  Ren-bind-zero zero = zero
+  Ren-bind-zero (suc x) = suc (suc x)
+
   extend-formula : ∀ {Γ} → formula Γ → formula (extend Γ)
   extend-formula = actR-formula suc
+
+  extend-formula-bind-zero : ∀ {Γ} → formula Γ → formula (extend Γ)
+  extend-formula-bind-zero = actR-formula Ren-bind-zero
 
   some : ∀ {Γ} → formula (extend Γ) → formula Γ
   some φ = ¬ (all (¬ φ))
@@ -264,8 +271,8 @@ module Class where
   elim (class Φ ≈ class Ψ) = all (elim Φ ⇔ elim Ψ)
   elim (svar x ∈ svar y) = svar x ∈ svar y
   elim (svar x ∈ class Φ) =  (elim Φ) ⟦ svar x ⟧
-  elim (class Φ ∈ svar x) = some ((all (svar zero ∈ svar (suc zero) ⇔ extend-formula (elim Φ))) ∧ svar zero ∈ svar (suc x))
-  elim (class Φ ∈ class Ψ) = some ((all (svar zero ∈ svar (suc zero) ⇔ extend-formula (elim Φ))) ∧ elim Ψ)
+  elim (class Φ ∈ svar x) = some ((all (svar zero ∈ svar (suc zero) ⇔ extend-formula-bind-zero (elim Φ))) ∧ svar zero ∈ svar (suc x))
+  elim (class Φ ∈ class Ψ) = some ((all (svar zero ∈ svar (suc zero) ⇔ extend-formula-bind-zero (elim Φ))) ∧ elim Ψ)
   elim (Φ ∧ Ψ) = elim Φ ∧ elim Ψ
   elim (Φ ⇔ Ψ) = elim Φ ⇔ elim Ψ
   elim (¬ Φ) = ¬ (elim Φ)
