@@ -2,6 +2,8 @@ open import Data.Empty renaming (⊥ to 𝟘) public
 open import Data.Nat using (ℕ ; suc) public
 open import Data.Fin using (Fin ; zero ; suc) public
 
+⟨⟩ = 0 -- empty context
+
 Ctx = ℕ
 Var = Fin
 

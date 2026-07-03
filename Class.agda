@@ -29,12 +29,26 @@ thy-cls CT class∈class = twoClasses
 thy-cls CT class≈class = twoClasses
 
 thy-ctx CT (set∈class n Γ y Φ) = Γ
-thy-ctx CT class∈class = 0
-thy-ctx CT class≈class = 0
+thy-ctx CT class∈class = ⟨⟩
+thy-ctx CT class≈class = ⟨⟩
 
 thy-axi CT (set∈class n Γ y Φ) = svar y ∈ class Φ ⇔ Φ [ svar y ]
 thy-axi CT class∈class = cvar A ∈ cvar B ⇔ exists (svar zero ≈ cvar A ∧ svar zero ∈ cvar B) -- perhaps a bad formulation
 thy-axi CT class≈class = cvar A ≈ cvar B ⇔ all (svar zero ∈ cvar A ⇔ svar zero ∈ cvar B)
+
+-- The basic first-order set theory with Extensionality as its only axiom
+
+data idxST : Set where
+  ext : idxST
+
+ST : Theory
+thy-idx ST = idxST
+
+thy-cls ST ext = 𝟘
+
+thy-ctx ST ext = ⟨⟩
+
+thy-axi ST ext = all (all (svar (suc zero) ≈ svar zero ⇔ all (svar zero ∈ svar (suc (suc zero)) ⇔ svar zero ∈ svar (suc zero))))
 
 actP : ∀ {T C Γ Δ} {Φ : Formula C Γ} (ρ : subst Γ Δ) → Proof T Φ → Proof T (subst-Formula ρ Φ)
 actP ρ p = {!!}
@@ -64,3 +78,17 @@ eliminability C Φ σ  = main-theorem (Subst-Formula σ Φ)
 
 corollary : ∀ C {Γ} (Φ : Formula C Γ) (σ : Subst Γ C 𝟘) → ∃[ φ ] Proof CT (Subst-Formula σ Φ ⇔ inj-formula φ)
 corollary C Φ σ = elim (Subst-Formula σ Φ) , eliminability C Φ σ
+
+-- The conservation theorem 
+
+_↔_ : Set → Set → Set
+ty ↔ ty' = (ty → ty') × (ty' → ty)
+
+conservation-⇒ : ∀ {C Γ} φ → Proof CT {C} {Γ} (inj-formula φ) → Proof ST {𝟘} {Γ} (inj-formula φ)
+conservation-⇒ = {!!}
+
+conservation-⇐ : ∀ {C Γ} φ → Proof ST {𝟘} {Γ} (inj-formula φ) → Proof CT {C} {Γ} (inj-formula φ)
+conservation-⇐ = {!!}
+
+conservation : ∀ {C Γ} φ → Proof CT {C} {Γ} (inj-formula φ) ↔ Proof ST {𝟘} {Γ} (inj-formula φ)
+conservation φ = conservation-⇒ φ , conservation-⇐ φ
