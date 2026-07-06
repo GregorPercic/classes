@@ -1,6 +1,7 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Data.Product
+open import Relation.Binary.PropositionalEquality using (_≡_ ; refl ; cong ; cong₂) renaming (subst to ≡-subst)
 
 open import Syntax
 open import Substitutions
@@ -12,7 +13,7 @@ open import Proof
 
 data idxCT : Set where
   -- the axiom schema y ∈ { x | Φ } ⇔ Φ[y/x]
-  set∈class : ∀ n Γ (y : Var Γ) (Φ : Formula (Fin n) (extend Γ)) → idxCT
+  set∈class : ∀ n Γ (y : Var Γ) (Φ : Formula (Fin-with-𝟘 n) (extend Γ)) → idxCT
   -- the axiom A ∈ B ⇔ ∃x.(x = A ∧ x ∈ B)
   class∈class : idxCT
   -- the axiom A = B ⇔ ∀x.(x ∈ A ⇔ x ∈ B)
@@ -24,7 +25,7 @@ data twoClasses : Set where
 CT : Theory
 thy-idx CT = idxCT
 
-thy-cls CT (set∈class n Γ y Φ) = Fin n
+thy-cls CT (set∈class n Γ y Φ) = Fin-with-𝟘 n
 thy-cls CT class∈class = twoClasses
 thy-cls CT class≈class = twoClasses
 
@@ -47,7 +48,7 @@ thy-idx ST = idxST
 thy-cls ST ext = 𝟘
 
 thy-ctx ST ext = ⟨⟩
-
+-- the axiom of extensionality: ∀x∀y.(x = y ⇔ ∀z.(z ∈ x ⇔ z ∈ y))
 thy-axi ST ext = all (all (svar (suc zero) ≈ svar zero ⇔ all (svar zero ∈ svar (suc (suc zero)) ⇔ svar zero ∈ svar (suc zero))))
 
 actP : ∀ {T C Γ Δ} {Φ : Formula C Γ} (ρ : subst Γ Δ) → Proof T Φ → Proof T (subst-Formula ρ Φ)
@@ -70,8 +71,91 @@ elim (Φ ⇔ Ψ) = elim Φ ⇔ elim Ψ
 elim (¬ Φ) = ¬ (elim Φ)
 elim (all Φ) = all (elim Φ)
 
+subst-dist-⇔ : ∀ {Γ T} {Φ Ψ : Formula₀ (extend Γ)} (x : Var Γ) → Proof T (Φ ⇔ Ψ) → Proof T (Φ [ svar x ] ⇔ Ψ [ svar x ])
+subst-dist-⇔ x p = all-elim (all-intro p)
+
+eq-to-⇔ : ∀ {Γ C T} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof T (Φ ⇔ Ψ)
+eq-to-⇔ refl = ⇔-refl
+
+subst-inj-commute : ∀ {Γ} {Φ : Formula₀ (extend Γ)} {x : Var Γ} → _[_] {C = 𝟘} (inj-formula (elim Φ)) (svar x) ≡ inj-formula ((elim Φ) ⟦ svar x ⟧)
+subst-inj-commute = {!   !}
+
+axiom-unsubst : 
+  ∀ {T} (i : thy-idx T) →
+  -----------------------
+  Proof T (thy-axi T i)
+axiom-unsubst i = {!   !}
+
+⇔-∈-subst : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → Proof CT (svar zero ∈ (class (extend-Formula-bind-zero Φ)) ⇔ (extend-Formula-bind-zero Φ) [ svar zero ])
+⇔-∈-subst {Γ} {Φ} = axiom-unsubst (set∈class 0 (extend Γ) zero (extend-Formula-bind-zero Φ))
+
+extend-eq : ∀ {C Γ} {Φ : Formula C (extend Γ)} → extend-Term (class Φ) ≡ class (extend-Formula-bind-zero Φ)
+extend-eq = {!   !}
+
+mutual
+  eq-subst-zero-Term : ∀ {Γ} {t : Term₀ (extend Γ)} → (extend-Term-bind-zero t) [ svar zero ]T ≡ t
+  eq-subst-zero-Term {t = svar zero} = refl
+  eq-subst-zero-Term {t = svar (suc x)} = refl
+  eq-subst-zero-Term {t = class Φ} = cong {! Term.class  !} (eq-subst-zero-Formula {Φ = Φ})
+
+  eq-subst-zero-Formula : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → (extend-Formula-bind-zero Φ) [ svar zero ] ≡ Φ
+  eq-subst-zero-Formula {Φ = t ≈ u} = cong₂ _≈_ (eq-subst-zero-Term {t = t}) (eq-subst-zero-Term {t = u})
+  eq-subst-zero-Formula {Φ = t ∈ u} = cong₂ _∈_ (eq-subst-zero-Term {t = t}) (eq-subst-zero-Term {t = u})
+  eq-subst-zero-Formula {Φ = Φ ∧ Ψ} = cong₂ _∧_ (eq-subst-zero-Formula {Φ = Φ}) (eq-subst-zero-Formula {Φ = Ψ})
+  eq-subst-zero-Formula {Φ = Φ ⇔ Ψ} = cong₂ _⇔_ (eq-subst-zero-Formula {Φ = Φ}) (eq-subst-zero-Formula {Φ = Ψ})
+  eq-subst-zero-Formula {Φ = ¬ Φ} = cong ¬_ (eq-subst-zero-Formula {Φ = Φ})
+  eq-subst-zero-Formula {Φ = all Φ} = cong {! Formula.all  !} (eq-subst-zero-Formula {Φ = Φ})
+
 main-theorem : ∀ {Γ} (Φ : Formula₀ Γ) → Proof CT (Φ ⇔ (inj-formula (elim Φ)))
-main-theorem Φ = {!!}
+main-theorem (svar x ≈ svar y) = ⇔-refl
+main-theorem {Γ = Γ} (svar x ≈ class Φ) = ⇔-trans lemma2 lemma8
+  where
+    Subst-AB : Subst Γ (thy-cls CT class≈class) 𝟘
+    Subst-AB A = svar x
+    Subst-AB B = class Φ
+
+    lemma1 : Proof CT (svar x ≈ class Φ ⇔ all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ extend-Term (class Φ)))
+    lemma1 = axiom class≈class Subst-AB (λ y → svar x) -- NASTY HACK!!!
+
+    lemma2 : Proof CT (svar x ≈ class Φ ⇔ all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))))
+    lemma2 = ≡-subst (λ t → Proof CT (svar x ≈ class Φ ⇔ all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ t))) extend-eq lemma1 -- ugly stuff
+
+    lemma3 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))) ⇔ (svar zero ∈ svar (suc x) ⇔ (extend-Formula-bind-zero Φ) [ svar zero ]))
+    lemma3 = ⇔-cong ⇔-refl ⇔-∈-subst
+
+    lemma4 : Proof CT ((svar zero ∈ svar (suc x) ⇔ (extend-Formula-bind-zero Φ) [ svar zero ]) ⇔ (svar zero ∈ svar (suc x) ⇔ Φ))
+    lemma4 = ⇔-cong ⇔-refl (eq-to-⇔ eq-subst-zero-Formula)
+
+    lemma5 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))) ⇔ (svar zero ∈ svar (suc x) ⇔ Φ))
+    lemma5 = ⇔-trans lemma3 lemma4
+
+    lemma6 : Proof CT ((svar zero ∈ svar (suc x) ⇔ Φ) ⇔ (svar zero ∈ svar (suc x) ⇔ inj-formula (elim Φ)))
+    lemma6 = ⇔-cong ⇔-refl (main-theorem Φ)
+
+    lemma7 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))) ⇔ (svar zero ∈ svar (suc x) ⇔ inj-formula (elim Φ)))
+    lemma7 = ⇔-trans lemma5 lemma6
+
+    lemma8 : Proof CT (all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))) ⇔ all (svar zero ∈ svar (suc x) ⇔ inj-formula (elim Φ)))
+    lemma8 = all-cong lemma7
+main-theorem (class Φ ≈ svar x) = {!   !}
+main-theorem (class Φ ≈ class Ψ) = {!   !}
+main-theorem (svar x ∈ svar y) = ⇔-refl
+main-theorem {Γ = Γ} (svar x ∈ class Φ) =
+  ⇔-trans
+    lemma
+    (eq-to-⇔ (subst-inj-commute {Φ = Φ}))
+  where
+    lemma : Proof CT (svar x ∈ class Φ ⇔ (inj-formula (elim Φ)) [ svar x ])
+    lemma =
+      ⇔-trans
+        (axiom-unsubst (set∈class 0 Γ x Φ))
+        (subst-dist-⇔ x (main-theorem Φ))
+main-theorem (class Φ ∈ svar x) = {!   !}
+main-theorem (class Φ ∈ class Ψ) = {!   !}
+main-theorem (Φ ∧ Ψ) = ∧-cong (main-theorem Φ) (main-theorem Ψ)
+main-theorem (Φ ⇔ Ψ) = ⇔-cong (main-theorem Φ) (main-theorem Ψ)
+main-theorem (¬ Φ) = ¬-cong (main-theorem Φ)
+main-theorem (all Φ) = all-cong (main-theorem Φ)
 
 eliminability : ∀ C {Γ} (Φ : Formula C Γ) (σ : Subst Γ C 𝟘) → Proof CT (Subst-Formula σ Φ ⇔ inj-formula (elim (Subst-Formula σ Φ)))
 eliminability C Φ σ  = main-theorem (Subst-Formula σ Φ)

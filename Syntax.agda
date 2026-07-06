@@ -7,6 +7,10 @@ open import Data.Fin using (Fin ; zero ; suc) public
 Ctx = ℕ
 Var = Fin
 
+Fin-with-𝟘 : ℕ → Set
+Fin-with-𝟘 ℕ.zero = 𝟘
+Fin-with-𝟘 (suc n) = Fin (suc n)
+
 extend : Ctx → Ctx
 extend = suc
 

@@ -1,5 +1,7 @@
 open import Syntax public
 
+open import Relation.Binary.PropositionalEquality using (_≡_)
+
 -- We define renamings first.
 
 ren : Ctx → Ctx → Set
@@ -88,13 +90,13 @@ mutual
   Subst-Term σ (cvar c) = σ c
   Subst-Term σ (class Φ) = class (Subst-Formula (extend-Subst σ) Φ)
 
-  Subst-Formula : ∀ {C D : Set} {Γ} → Subst  Γ C D → Formula C Γ → Formula D Γ
+  Subst-Formula : ∀ {C D : Set} {Γ} → Subst Γ C D → Formula C Γ → Formula D Γ
   Subst-Formula σ (t ≈ u) = (Subst-Term σ t) ≈ (Subst-Term σ u)
   Subst-Formula σ (t ∈ u) = (Subst-Term σ t) ∈ (Subst-Term σ u)
   Subst-Formula σ (Φ ∧ Ψ) = (Subst-Formula σ Φ) ∧ (Subst-Formula σ Ψ)
   Subst-Formula σ (Φ ⇔ Ψ) = (Subst-Formula σ Φ) ⇔ (Subst-Formula σ Ψ)
   Subst-Formula σ (¬ Φ) = ¬ (Subst-Formula σ Φ)
-  Subst-Formula {Γ = Γ} σ (all Φ) = all (Subst-Formula (extend-Subst σ) Φ)
+  Subst-Formula σ (all Φ) = all (Subst-Formula (extend-Subst σ) Φ)
 
 -- Simple substitution of one term
 
@@ -104,6 +106,9 @@ subst₀ t (suc x) = svar x
 
 _[_] : ∀ {Γ C} → Formula C (extend Γ) → term Γ → Formula C Γ
 Φ [ t ] = subst-Formula (subst₀ t) Φ
+
+_[_]T : ∀ {Γ C} → Term C (extend Γ) → term Γ → Term C Γ
+t [ u ]T = subst-Term (subst₀ u) t
 
 _⟦_⟧ : ∀ {Γ} → formula (extend Γ) → term Γ → formula Γ
 φ ⟦ t ⟧ = subst-formula (subst₀ t) φ
@@ -119,6 +124,15 @@ extend-formula-bind-zero = ren-formula ren-bind-zero
 
 extend-Term : ∀ {Γ C} → Term C Γ → Term C (extend Γ)
 extend-Term = ren-Term suc
+
+extend-Term-bind-zero : ∀ {Γ C} → Term C Γ → Term C (extend Γ)
+extend-Term-bind-zero = ren-Term ren-bind-zero
+
+extend-Formula : ∀ {Γ C} → Formula C Γ → Formula C (extend Γ)
+extend-Formula = ren-Formula suc
+
+extend-Formula-bind-zero : ∀ {Γ C} → Formula C Γ → Formula C (extend Γ)
+extend-Formula-bind-zero = ren-Formula ren-bind-zero
 
 
 record Sbs (C : Set) (Γ : Ctx) (D : Set) (Δ : Ctx) : Set where
