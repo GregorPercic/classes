@@ -1,7 +1,6 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Data.Product
-open import Relation.Binary.PropositionalEquality using (_≡_ ; refl ; cong ; cong₂) renaming (subst to ≡-subst)
 
 open import Syntax
 open import Substitutions

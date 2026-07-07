@@ -1,6 +1,8 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 open import Syntax public
 
-open import Relation.Binary.PropositionalEquality using (_≡_)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans) renaming (subst to ≡-subst) public
 
 -- We define renamings first.
 
@@ -134,6 +136,45 @@ extend-Formula = ren-Formula suc
 extend-Formula-bind-zero : ∀ {Γ C} → Formula C Γ → Formula C (extend Γ)
 extend-Formula-bind-zero = ren-Formula ren-bind-zero
 
+contract : ∀ {Γ} → ren (extend (extend Γ)) (extend Γ)
+contract zero = zero
+contract (suc x) = x
+
+id-ren : ∀ {Γ} → ren Γ Γ
+id-ren x = x
+
+postulate
+  fun-Ext : ∀ {A : Set} {B : A → Set} {f g : (x : A) → B x} → (∀ x → f x ≡ g x) → f ≡ g
+
+extend-preserves-id-ren : ∀ {Γ} → (extend-ren (id-ren {Γ})) ≡ id-ren {extend Γ}
+extend-preserves-id-ren = fun-Ext (λ {zero → refl ; (suc x) → refl})
+
+mutual
+  id-ren-Term : ∀ {C Γ} {t : Term C Γ} → (ren-Term id-ren) t ≡ t
+  id-ren-Term {t = svar x} = refl
+  id-ren-Term {t = cvar c} = refl
+  id-ren-Term {t = class Φ} =
+    cong
+      class
+      (trans
+        (cong (λ r → ren-Formula r Φ) extend-preserves-id-ren)
+        (id-ren-Formula {Φ = Φ}))
+
+  id-ren-Formula : ∀ {C Γ} {Φ : Formula C Γ} → (ren-Formula id-ren) Φ ≡ Φ
+  id-ren-Formula {Φ = t ≈ u} = cong₂ _≈_ (id-ren-Term {t = t}) (id-ren-Term {t = u})
+  id-ren-Formula {Φ = t ∈ u} = cong₂ _∈_ (id-ren-Term {t = t}) (id-ren-Term {t = u})
+  id-ren-Formula {Φ = Φ ∧ Ψ} = cong₂ _∧_ (id-ren-Formula {Φ = Φ}) (id-ren-Formula {Φ = Ψ})
+  id-ren-Formula {Φ = Φ ⇔ Ψ} = cong₂ _⇔_ (id-ren-Formula {Φ = Φ}) (id-ren-Formula {Φ = Ψ})
+  id-ren-Formula {Φ = ¬ Φ} = cong ¬_ (id-ren-Formula {Φ = Φ})
+  id-ren-Formula {Φ = all Φ} =
+    cong
+      all
+      (trans
+        (cong (λ r → ren-Formula r Φ) extend-preserves-id-ren)
+        (id-ren-Formula {Φ = Φ}))
+
+subst-zero-is-contract : ∀ {C Γ} {Φ : Formula C (extend (extend Γ))} → Φ [ svar zero ]F ≡ (ren-Formula contract) Φ
+subst-zero-is-contract = {!  !}
 
 record Sbs (C : Set) (Γ : Ctx) (D : Set) (Δ : Ctx) : Set where
   field
