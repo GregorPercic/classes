@@ -24,7 +24,7 @@ data Proof (T : Theory) {C : Set} : {Γ : Ctx} → Formula C Γ → Set where
     ∀ {Γ} {Φ : Formula C (extend Γ)} {t : term Γ} →
     Proof T (all Φ) →
     -----------------
-    Proof T (Φ [ t ])
+    Proof T (Φ [ t ]F)
 
   all-intro :
     ∀ {Γ} {Φ : Formula C (extend Γ)} →

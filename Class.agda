@@ -33,7 +33,7 @@ thy-ctx CT (set∈class n Γ y Φ) = Γ
 thy-ctx CT class∈class = ⟨⟩
 thy-ctx CT class≈class = ⟨⟩
 
-thy-axi CT (set∈class n Γ y Φ) = svar y ∈ class Φ ⇔ Φ [ svar y ]
+thy-axi CT (set∈class n Γ y Φ) = svar y ∈ class Φ ⇔ Φ [ svar y ]F
 thy-axi CT class∈class = cvar A ∈ cvar B ⇔ exists (svar zero ≈ cvar A ∧ svar zero ∈ cvar B) -- perhaps a bad formulation
 thy-axi CT class≈class = cvar A ≈ cvar B ⇔ all (svar zero ∈ cvar A ⇔ svar zero ∈ cvar B)
 
@@ -63,7 +63,7 @@ elim (svar x ≈ class Φ) = all (svar zero ∈ svar (suc x) ⇔ elim Φ)
 elim (class Φ ≈ svar x) = all (elim Φ ⇔ svar zero ∈ svar (suc x))
 elim (class Φ ≈ class Ψ) = all (elim Φ ⇔ elim Ψ)
 elim (svar x ∈ svar y) = svar x ∈ svar y
-elim (svar x ∈ class Φ) = (elim Φ) ⟦ svar x ⟧
+elim (svar x ∈ class Φ) = (elim Φ) [ svar x ]f
 elim (class Φ ∈ svar x) = some ((all (svar zero ∈ svar (suc zero) ⇔ extend-formula-bind-zero (elim Φ))) ∧ svar zero ∈ svar (suc x))
 elim (class Φ ∈ class Ψ) = some ((all (svar zero ∈ svar (suc zero) ⇔ extend-formula-bind-zero (elim Φ))) ∧ elim Ψ)
 elim (Φ ∧ Ψ) = elim Φ ∧ elim Ψ
@@ -71,13 +71,13 @@ elim (Φ ⇔ Ψ) = elim Φ ⇔ elim Ψ
 elim (¬ Φ) = ¬ (elim Φ)
 elim (all Φ) = all (elim Φ)
 
-subst-dist-⇔ : ∀ {Γ T} {Φ Ψ : Formula₀ (extend Γ)} (x : Var Γ) → Proof T (Φ ⇔ Ψ) → Proof T (Φ [ svar x ] ⇔ Ψ [ svar x ])
+subst-dist-⇔ : ∀ {Γ T} {Φ Ψ : Formula₀ (extend Γ)} (x : Var Γ) → Proof T (Φ ⇔ Ψ) → Proof T (Φ [ svar x ]F ⇔ Ψ [ svar x ]F)
 subst-dist-⇔ x p = all-elim (all-intro p)
 
 eq-to-⇔ : ∀ {Γ C T} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof T (Φ ⇔ Ψ)
 eq-to-⇔ refl = ⇔-refl
 
-subst-inj-commute : ∀ {Γ} {Φ : Formula₀ (extend Γ)} {x : Var Γ} → _[_] {C = 𝟘} (inj-formula (elim Φ)) (svar x) ≡ inj-formula ((elim Φ) ⟦ svar x ⟧)
+subst-inj-commute : ∀ {Γ} {Φ : Formula₀ (extend Γ)} {x : Var Γ} → _[_]F {C = 𝟘} (inj-formula (elim Φ)) (svar x) ≡ inj-formula ((elim Φ) [ svar x ]f)
 subst-inj-commute = {!   !}
 
 axiom-unsubst : 
@@ -86,7 +86,7 @@ axiom-unsubst :
   Proof T (thy-axi T i)
 axiom-unsubst i = {!   !}
 
-⇔-∈-subst : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → Proof CT (svar zero ∈ (class (extend-Formula-bind-zero Φ)) ⇔ (extend-Formula-bind-zero Φ) [ svar zero ])
+⇔-∈-subst : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → Proof CT (svar zero ∈ (class (extend-Formula-bind-zero Φ)) ⇔ (extend-Formula-bind-zero Φ) [ svar zero ]F)
 ⇔-∈-subst {Γ} {Φ} = axiom-unsubst (set∈class 0 (extend Γ) zero (extend-Formula-bind-zero Φ))
 
 extend-eq : ∀ {C Γ} {Φ : Formula C (extend Γ)} → extend-Term (class Φ) ≡ class (extend-Formula-bind-zero Φ)
@@ -98,7 +98,7 @@ mutual
   eq-subst-zero-Term {t = svar (suc x)} = refl
   eq-subst-zero-Term {t = class Φ} = cong {! Term.class  !} (eq-subst-zero-Formula {Φ = Φ})
 
-  eq-subst-zero-Formula : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → (extend-Formula-bind-zero Φ) [ svar zero ] ≡ Φ
+  eq-subst-zero-Formula : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → (extend-Formula-bind-zero Φ) [ svar zero ]F ≡ Φ
   eq-subst-zero-Formula {Φ = t ≈ u} = cong₂ _≈_ (eq-subst-zero-Term {t = t}) (eq-subst-zero-Term {t = u})
   eq-subst-zero-Formula {Φ = t ∈ u} = cong₂ _∈_ (eq-subst-zero-Term {t = t}) (eq-subst-zero-Term {t = u})
   eq-subst-zero-Formula {Φ = Φ ∧ Ψ} = cong₂ _∧_ (eq-subst-zero-Formula {Φ = Φ}) (eq-subst-zero-Formula {Φ = Ψ})
@@ -120,10 +120,10 @@ main-theorem {Γ = Γ} (svar x ≈ class Φ) = ⇔-trans lemma2 lemma8
     lemma2 : Proof CT (svar x ≈ class Φ ⇔ all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))))
     lemma2 = ≡-subst (λ t → Proof CT (svar x ≈ class Φ ⇔ all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ t))) extend-eq lemma1 -- ugly stuff
 
-    lemma3 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))) ⇔ (svar zero ∈ svar (suc x) ⇔ (extend-Formula-bind-zero Φ) [ svar zero ]))
+    lemma3 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))) ⇔ (svar zero ∈ svar (suc x) ⇔ (extend-Formula-bind-zero Φ) [ svar zero ]F))
     lemma3 = ⇔-cong ⇔-refl ⇔-∈-subst
 
-    lemma4 : Proof CT ((svar zero ∈ svar (suc x) ⇔ (extend-Formula-bind-zero Φ) [ svar zero ]) ⇔ (svar zero ∈ svar (suc x) ⇔ Φ))
+    lemma4 : Proof CT ((svar zero ∈ svar (suc x) ⇔ (extend-Formula-bind-zero Φ) [ svar zero ]F) ⇔ (svar zero ∈ svar (suc x) ⇔ Φ))
     lemma4 = ⇔-cong ⇔-refl (eq-to-⇔ eq-subst-zero-Formula)
 
     lemma5 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))) ⇔ (svar zero ∈ svar (suc x) ⇔ Φ))
@@ -145,7 +145,7 @@ main-theorem {Γ = Γ} (svar x ∈ class Φ) =
     lemma
     (eq-to-⇔ (subst-inj-commute {Φ = Φ}))
   where
-    lemma : Proof CT (svar x ∈ class Φ ⇔ (inj-formula (elim Φ)) [ svar x ])
+    lemma : Proof CT (svar x ∈ class Φ ⇔ (inj-formula (elim Φ)) [ svar x ]F)
     lemma =
       ⇔-trans
         (axiom-unsubst (set∈class 0 Γ x Φ))

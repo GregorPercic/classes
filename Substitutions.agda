@@ -104,14 +104,14 @@ subst₀ : ∀ {Γ : Ctx} → term Γ → subst (extend Γ) Γ
 subst₀ t zero = t
 subst₀ t (suc x) = svar x
 
-_[_] : ∀ {Γ C} → Formula C (extend Γ) → term Γ → Formula C Γ
-Φ [ t ] = subst-Formula (subst₀ t) Φ
+_[_]F : ∀ {Γ C} → Formula C (extend Γ) → term Γ → Formula C Γ
+Φ [ t ]F = subst-Formula (subst₀ t) Φ
 
 _[_]T : ∀ {Γ C} → Term C (extend Γ) → term Γ → Term C Γ
 t [ u ]T = subst-Term (subst₀ u) t
 
-_⟦_⟧ : ∀ {Γ} → formula (extend Γ) → term Γ → formula Γ
-φ ⟦ t ⟧ = subst-formula (subst₀ t) φ
+_[_]f : ∀ {Γ} → formula (extend Γ) → term Γ → formula Γ
+φ [ t ]f = subst-formula (subst₀ t) φ
 
 
 -- Infrastructure for extending other constructs
