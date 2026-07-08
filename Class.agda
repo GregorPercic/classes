@@ -63,8 +63,8 @@ elim (class Φ ≈ svar x) = all (elim Φ ⇔ svar zero ∈ svar (suc x))
 elim (class Φ ≈ class Ψ) = all (elim Φ ⇔ elim Ψ)
 elim (svar x ∈ svar y) = svar x ∈ svar y
 elim (svar x ∈ class Φ) = (elim Φ) [ svar x ]f
-elim (class Φ ∈ svar x) = some ((all (svar zero ∈ svar (suc zero) ⇔ extend-formula-bind-zero (elim Φ))) ∧ svar zero ∈ svar (suc x))
-elim (class Φ ∈ class Ψ) = some ((all (svar zero ∈ svar (suc zero) ⇔ extend-formula-bind-zero (elim Φ))) ∧ elim Ψ)
+elim (class Φ ∈ svar x) = some ((all (svar zero ∈ svar (suc zero) ⇔ extend-formula-ctx (elim Φ))) ∧ svar zero ∈ svar (suc x))
+elim (class Φ ∈ class Ψ) = some ((all (svar zero ∈ svar (suc zero) ⇔ extend-formula-ctx (elim Φ))) ∧ elim Ψ)
 elim (Φ ∧ Ψ) = elim Φ ∧ elim Ψ
 elim (Φ ⇔ Ψ) = elim Φ ⇔ elim Ψ
 elim (¬ Φ) = ¬ (elim Φ)
@@ -76,93 +76,87 @@ subst-dist-⇔ x p = all-elim (all-intro p)
 eq-to-⇔ : ∀ {Γ C T} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof T (Φ ⇔ Ψ)
 eq-to-⇔ refl = ⇔-refl
 
-subst-inj-commute : ∀ {Γ} {Φ : Formula₀ (extend Γ)} {x : Var Γ} → _[_]F {C = 𝟘} (inj-formula (elim Φ)) (svar x) ≡ inj-formula ((elim Φ) [ svar x ]f)
+subst-inj-commute : ∀ {Γ} {φ : formula (extend Γ)} {x : Var Γ} → _[_]F {C = 𝟘} (inj-formula φ) (svar x) ≡ inj-formula (φ [ svar x ]f)
 subst-inj-commute = {!   !}
 
 axiom-unsubst : 
   ∀ {T} (i : thy-idx T) →
   -----------------------
   Proof T (thy-axi T i)
-axiom-unsubst i = {!   !}
+axiom-unsubst i = {!  !}
 
-⇔-∈-subst : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → Proof CT (svar zero ∈ (class (extend-Formula-bind-zero Φ)) ⇔ (extend-Formula-bind-zero Φ) [ svar zero ]F)
-⇔-∈-subst {Γ} {Φ} = axiom-unsubst (set∈class 0 (extend Γ) zero (extend-Formula-bind-zero Φ))
+⇔-∈-subst : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → Proof CT (svar zero ∈ (class (extend-Formula-ctx Φ)) ⇔ (extend-Formula-ctx Φ) [ svar zero ]F)
+⇔-∈-subst {Γ} {Φ} = axiom-unsubst (set∈class 0 (extend Γ) zero (extend-Formula-ctx Φ))
 
-extend-eq : ∀ {C Γ} {Φ : Formula C (extend Γ)} → extend-Term (class Φ) ≡ class (extend-Formula-bind-zero Φ)
-extend-eq = {!   !}
+eq-subst-zero-Formula : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → (extend-Formula-ctx Φ) [ svar zero ]F ≡ Φ
+eq-subst-zero-Formula {Φ = Φ} = trans
+    (≡-subst
+      (λ f → (extend-Formula-ctx Φ [ svar zero ]F) ≡ ren-Formula f Φ)
+      contract-extend-ren-suc-id
+      (trans
+        (subst-zero-is-contract-Formula {Φ = (extend-Formula-ctx Φ)})
+        (ren-comp-Formula (extend-ren suc) contract)))
+    id-ren-Formula
 
-mutual
-  eq-subst-zero-Term : ∀ {Γ} {t : Term₀ (extend Γ)} → (extend-Term-bind-zero t) [ svar zero ]T ≡ t
-  eq-subst-zero-Term {t = svar zero} = refl
-  eq-subst-zero-Term {t = svar (suc x)} = refl
-  eq-subst-zero-Term {t = class Φ} = cong {! Term.class  !} (eq-subst-zero-Formula {Φ = Φ})
-
-  eq-subst-zero-Formula : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → (extend-Formula-bind-zero Φ) [ svar zero ]F ≡ Φ
-  eq-subst-zero-Formula {Φ = t ≈ u} = cong₂ _≈_ (eq-subst-zero-Term {t = t}) (eq-subst-zero-Term {t = u})
-  eq-subst-zero-Formula {Φ = t ∈ u} = cong₂ _∈_ (eq-subst-zero-Term {t = t}) (eq-subst-zero-Term {t = u})
-  eq-subst-zero-Formula {Φ = Φ ∧ Ψ} = cong₂ _∧_ (eq-subst-zero-Formula {Φ = Φ}) (eq-subst-zero-Formula {Φ = Ψ})
-  eq-subst-zero-Formula {Φ = Φ ⇔ Ψ} = cong₂ _⇔_ (eq-subst-zero-Formula {Φ = Φ}) (eq-subst-zero-Formula {Φ = Ψ})
-  eq-subst-zero-Formula {Φ = ¬ Φ} = cong ¬_ (eq-subst-zero-Formula {Φ = Φ})
-  eq-subst-zero-Formula {Φ = all Φ} = cong {! Formula.all  !} (eq-subst-zero-Formula {Φ = Φ})
-
-main-theorem : ∀ {Γ} (Φ : Formula₀ Γ) → Proof CT (Φ ⇔ (inj-formula (elim Φ)))
-main-theorem (svar x ≈ svar y) = ⇔-refl
-main-theorem {Γ = Γ} (svar x ≈ class Φ) = ⇔-trans lemma2 lemma8
+eliminability-main-theorem : ∀ {Γ} (Φ : Formula₀ Γ) → Proof CT (Φ ⇔ (inj-formula (elim Φ)))
+eliminability-main-theorem (svar x ≈ svar y) = ⇔-refl
+eliminability-main-theorem {Γ = Γ} (svar x ≈ class Φ) = ⇔-trans lemma1 lemma7
   where
     Subst-AB : Subst Γ (thy-cls CT class≈class) 𝟘
     Subst-AB A = svar x
     Subst-AB B = class Φ
 
-    lemma1 : Proof CT (svar x ≈ class Φ ⇔ all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ extend-Term (class Φ)))
+    Φ+ : Formula₀ (extend (extend Γ))
+    Φ+ = (extend-Formula-ctx Φ)
+
+    lemma1 : Proof CT (svar x ≈ class Φ ⇔ all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class Φ+)))
     lemma1 = axiom class≈class Subst-AB (λ y → svar x) -- NASTY HACK!!!
 
-    lemma2 : Proof CT (svar x ≈ class Φ ⇔ all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))))
-    lemma2 = ≡-subst (λ t → Proof CT (svar x ≈ class Φ ⇔ all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ t))) extend-eq lemma1 -- ugly stuff
+    lemma2 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class Φ+)) ⇔ (svar zero ∈ svar (suc x) ⇔ Φ+ [ svar zero ]F))
+    lemma2 = ⇔-cong ⇔-refl ⇔-∈-subst
 
-    lemma3 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))) ⇔ (svar zero ∈ svar (suc x) ⇔ (extend-Formula-bind-zero Φ) [ svar zero ]F))
-    lemma3 = ⇔-cong ⇔-refl ⇔-∈-subst
+    lemma3 : Proof CT ((svar zero ∈ svar (suc x) ⇔ Φ+ [ svar zero ]F) ⇔ (svar zero ∈ svar (suc x) ⇔ Φ))
+    lemma3 = ⇔-cong ⇔-refl (eq-to-⇔ eq-subst-zero-Formula)
 
-    lemma4 : Proof CT ((svar zero ∈ svar (suc x) ⇔ (extend-Formula-bind-zero Φ) [ svar zero ]F) ⇔ (svar zero ∈ svar (suc x) ⇔ Φ))
-    lemma4 = ⇔-cong ⇔-refl (eq-to-⇔ eq-subst-zero-Formula)
+    lemma4 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class Φ+)) ⇔ (svar zero ∈ svar (suc x) ⇔ Φ))
+    lemma4 = ⇔-trans lemma2 lemma3
 
-    lemma5 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))) ⇔ (svar zero ∈ svar (suc x) ⇔ Φ))
-    lemma5 = ⇔-trans lemma3 lemma4
+    lemma5 : Proof CT ((svar zero ∈ svar (suc x) ⇔ Φ) ⇔ (svar zero ∈ svar (suc x) ⇔ inj-formula (elim Φ)))
+    lemma5 = ⇔-cong ⇔-refl (eliminability-main-theorem Φ)
 
-    lemma6 : Proof CT ((svar zero ∈ svar (suc x) ⇔ Φ) ⇔ (svar zero ∈ svar (suc x) ⇔ inj-formula (elim Φ)))
-    lemma6 = ⇔-cong ⇔-refl (main-theorem Φ)
+    lemma6 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class Φ+)) ⇔ (svar zero ∈ svar (suc x) ⇔ inj-formula (elim Φ)))
+    lemma6 = ⇔-trans lemma4 lemma5
 
-    lemma7 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))) ⇔ (svar zero ∈ svar (suc x) ⇔ inj-formula (elim Φ)))
-    lemma7 = ⇔-trans lemma5 lemma6
-
-    lemma8 : Proof CT (all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class (extend-Formula-bind-zero Φ))) ⇔ all (svar zero ∈ svar (suc x) ⇔ inj-formula (elim Φ)))
-    lemma8 = all-cong lemma7
-main-theorem (class Φ ≈ svar x) = {!   !}
-main-theorem (class Φ ≈ class Ψ) = {!   !}
-main-theorem (svar x ∈ svar y) = ⇔-refl
-main-theorem {Γ = Γ} (svar x ∈ class Φ) =
+    lemma7 : Proof CT (all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class Φ+)) ⇔ all (svar zero ∈ svar (suc x) ⇔ inj-formula (elim Φ)))
+    lemma7 = all-cong lemma6
+eliminability-main-theorem (class Φ ≈ svar x) = {!  !}
+eliminability-main-theorem (class Φ ≈ class Ψ) = {!   !}
+eliminability-main-theorem (svar x ∈ svar y) = ⇔-refl
+eliminability-main-theorem {Γ = Γ} (svar x ∈ class Φ) =
   ⇔-trans
     lemma
-    (eq-to-⇔ (subst-inj-commute {Φ = Φ}))
+    (eq-to-⇔ (subst-inj-commute {φ = elim Φ}))
   where
     lemma : Proof CT (svar x ∈ class Φ ⇔ (inj-formula (elim Φ)) [ svar x ]F)
     lemma =
       ⇔-trans
         (axiom-unsubst (set∈class 0 Γ x Φ))
-        (subst-dist-⇔ x (main-theorem Φ))
-main-theorem (class Φ ∈ svar x) = {!   !}
-main-theorem (class Φ ∈ class Ψ) = {!   !}
-main-theorem (Φ ∧ Ψ) = ∧-cong (main-theorem Φ) (main-theorem Ψ)
-main-theorem (Φ ⇔ Ψ) = ⇔-cong (main-theorem Φ) (main-theorem Ψ)
-main-theorem (¬ Φ) = ¬-cong (main-theorem Φ)
-main-theorem (all Φ) = all-cong (main-theorem Φ)
+        (subst-dist-⇔ x (eliminability-main-theorem Φ))
+eliminability-main-theorem (class Φ ∈ svar x) = {!   !}
+eliminability-main-theorem (class Φ ∈ class Ψ) = {!   !}
+eliminability-main-theorem (Φ ∧ Ψ) = ∧-cong (eliminability-main-theorem Φ) (eliminability-main-theorem Ψ)
+eliminability-main-theorem (Φ ⇔ Ψ) = ⇔-cong (eliminability-main-theorem Φ) (eliminability-main-theorem Ψ)
+eliminability-main-theorem (¬ Φ) = ¬-cong (eliminability-main-theorem Φ)
+eliminability-main-theorem (all Φ) = all-cong (eliminability-main-theorem Φ)
 
 eliminability : ∀ C {Γ} (Φ : Formula C Γ) (σ : Subst Γ C 𝟘) → Proof CT (Subst-Formula σ Φ ⇔ inj-formula (elim (Subst-Formula σ Φ)))
-eliminability C Φ σ  = main-theorem (Subst-Formula σ Φ)
+eliminability C Φ σ  = eliminability-main-theorem (Subst-Formula σ Φ)
 
 corollary : ∀ C {Γ} (Φ : Formula C Γ) (σ : Subst Γ C 𝟘) → ∃[ φ ] Proof CT (Subst-Formula σ Φ ⇔ inj-formula φ)
 corollary C Φ σ = elim (Subst-Formula σ Φ) , eliminability C Φ σ
 
--- The conservation theorem 
+
+-- eliminability-The conservation theorem 
 
 _↔_ : Set → Set → Set
 ty ↔ ty' = (ty → ty') × (ty' → ty)

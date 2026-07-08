@@ -3,6 +3,7 @@
 open import Syntax public
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans) renaming (subst to ≡-subst) public
+open import Function.Base using (_∘_)
 
 -- We define renamings first.
 
@@ -121,20 +122,20 @@ _[_]f : ∀ {Γ} → formula (extend Γ) → term Γ → formula Γ
 extend-formula : ∀ {Γ} → formula Γ → formula (extend Γ)
 extend-formula = ren-formula suc
 
-extend-formula-bind-zero : ∀ {Γ} → formula Γ → formula (extend Γ)
-extend-formula-bind-zero = ren-formula ren-bind-zero
+extend-formula-ctx : ∀ {Γ} → formula (extend Γ) → formula (extend (extend Γ))
+extend-formula-ctx = ren-formula (extend-ren suc)
 
 extend-Term : ∀ {Γ C} → Term C Γ → Term C (extend Γ)
 extend-Term = ren-Term suc
 
-extend-Term-bind-zero : ∀ {Γ C} → Term C Γ → Term C (extend Γ)
-extend-Term-bind-zero = ren-Term ren-bind-zero
+extend-Term-ctx : ∀ {Γ C} → Term C (extend Γ) → Term C (extend (extend Γ))
+extend-Term-ctx = ren-Term (extend-ren suc)
 
 extend-Formula : ∀ {Γ C} → Formula C Γ → Formula C (extend Γ)
 extend-Formula = ren-Formula suc
 
-extend-Formula-bind-zero : ∀ {Γ C} → Formula C Γ → Formula C (extend Γ)
-extend-Formula-bind-zero = ren-Formula ren-bind-zero
+extend-Formula-ctx : ∀ {Γ C} → Formula C (extend Γ) → Formula C (extend (extend Γ))
+extend-Formula-ctx = ren-Formula (extend-ren suc)
 
 contract : ∀ {Γ} → ren (extend (extend Γ)) (extend Γ)
 contract zero = zero
@@ -144,10 +145,13 @@ id-ren : ∀ {Γ} → ren Γ Γ
 id-ren x = x
 
 postulate
-  fun-Ext : ∀ {A : Set} {B : A → Set} {f g : (x : A) → B x} → (∀ x → f x ≡ g x) → f ≡ g
+  fun-ext : ∀ {A : Set} {B : A → Set} {f g : (x : A) → B x} → (∀ x → f x ≡ g x) → f ≡ g
 
 extend-preserves-id-ren : ∀ {Γ} → (extend-ren (id-ren {Γ})) ≡ id-ren {extend Γ}
-extend-preserves-id-ren = fun-Ext (λ {zero → refl ; (suc x) → refl})
+extend-preserves-id-ren = fun-ext (λ {zero → refl ; (suc x) → refl})
+
+contract-extend-ren-suc-id : ∀ {Γ} → contract ∘ (extend-ren {Γ = Γ} suc) ≡ id-ren
+contract-extend-ren-suc-id = fun-ext λ {zero → refl ; (suc x) → refl}
 
 mutual
   id-ren-Term : ∀ {C Γ} {t : Term C Γ} → (ren-Term id-ren) t ≡ t
@@ -173,8 +177,11 @@ mutual
         (cong (λ r → ren-Formula r Φ) extend-preserves-id-ren)
         (id-ren-Formula {Φ = Φ}))
 
-subst-zero-is-contract : ∀ {C Γ} {Φ : Formula C (extend (extend Γ))} → Φ [ svar zero ]F ≡ (ren-Formula contract) Φ
-subst-zero-is-contract = {!  !}
+subst-zero-is-contract-Formula : ∀ {C Γ} {Φ : Formula C (extend (extend Γ))} → Φ [ svar zero ]F ≡ (ren-Formula contract) Φ
+subst-zero-is-contract-Formula = {!  !}
+
+ren-comp-Formula : ∀ {C Γ Δ Ω} {Φ : Formula C Γ} (r : ren Γ Δ) (r' : ren Δ Ω) → ren-Formula r' (ren-Formula r Φ) ≡ ren-Formula (r' ∘ r) Φ
+ren-comp-Formula = {!   !}
 
 record Sbs (C : Set) (Γ : Ctx) (D : Set) (Δ : Ctx) : Set where
   field
