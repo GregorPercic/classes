@@ -77,7 +77,12 @@ eq-to-⇔ : ∀ {Γ C T} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof T (Φ �
 eq-to-⇔ refl = ⇔-refl
 
 subst-inj-commute : ∀ {Γ} {φ : formula (extend Γ)} {x : Var Γ} → _[_]F {C = 𝟘} (inj-formula φ) (svar x) ≡ inj-formula (φ [ svar x ]f)
-subst-inj-commute = {!   !}
+subst-inj-commute {φ = φ} =
+  trans
+    ren-is-subst-var-Formula
+    (trans
+      subst-inj-commute-ren
+      (cong inj-formula (sym ren-is-subst-var-formula)))
 
 axiom-unsubst : 
   ∀ {T} (i : thy-idx T) →

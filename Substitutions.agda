@@ -2,7 +2,7 @@
 
 open import Syntax public
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans) renaming (subst to ≡-subst) public
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans; sym) renaming (subst to ≡-subst) public
 open import Function.Base using (_∘_)
 
 -- We define renamings first.
@@ -38,10 +38,6 @@ mutual
   ren-Formula r (Φ ⇔ Ψ) = ren-Formula r Φ ⇔ ren-Formula r Ψ
   ren-Formula r (¬ Φ) = ¬ (ren-Formula r Φ)
   ren-Formula r (all Φ) = all (ren-Formula (extend-ren r) Φ)
-
-ren-bind-zero : ∀ {Γ} → ren Γ (extend Γ)
-ren-bind-zero zero = zero
-ren-bind-zero (suc x) = suc (suc x)
 
 
 -- Renamings give us substitutions.
@@ -177,11 +173,25 @@ mutual
         (cong (λ r → ren-Formula r Φ) extend-preserves-id-ren)
         (id-ren-Formula {Φ = Φ}))
 
-subst-zero-is-contract-Formula : ∀ {C Γ} {Φ : Formula C (extend (extend Γ))} → Φ [ svar zero ]F ≡ (ren-Formula contract) Φ
-subst-zero-is-contract-Formula = {!  !}
-
 ren-comp-Formula : ∀ {C Γ Δ Ω} {Φ : Formula C Γ} (r : ren Γ Δ) (r' : ren Δ Ω) → ren-Formula r' (ren-Formula r Φ) ≡ ren-Formula (r' ∘ r) Φ
 ren-comp-Formula = {!   !}
+
+ren₀ : ∀ {Γ} (x : Var Γ) → ren (extend Γ) Γ
+ren₀ x zero = x
+ren₀ x (suc y) = y
+
+ren-is-subst-var-Formula : ∀ {C Γ} {Φ : Formula C (extend Γ)} {x : Var Γ} → Φ [ svar x ]F ≡ (ren-Formula (ren₀ x)) Φ
+ren-is-subst-var-Formula = {!    !}
+
+ren-is-subst-var-formula : ∀ {Γ} {φ : formula (extend Γ)} {x : Var Γ} → φ [ svar x ]f ≡ ren-formula (ren₀ x) φ
+ren-is-subst-var-formula = {!   !}
+
+subst-inj-commute-ren : ∀ {Γ C} {φ : formula (extend Γ)} {x : Var Γ} →
+  ren-Formula {C = C} (ren₀ x) (inj-formula φ) ≡ inj-formula (ren-formula (ren₀ x) φ)
+subst-inj-commute-ren = {!  !}
+
+subst-zero-is-contract-Formula : ∀ {C Γ} {Φ : Formula C (extend (extend Γ))} → Φ [ svar zero ]F ≡ (ren-Formula contract) Φ
+subst-zero-is-contract-Formula = {!  !}
 
 record Sbs (C : Set) (Γ : Ctx) (D : Set) (Δ : Ctx) : Set where
   field
