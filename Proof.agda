@@ -8,8 +8,8 @@ data Proof (T : Theory) {C : Set} : {Γ : Ctx} → Formula C Γ → Set where
   axiom :
     ∀ {Γ} (i : thy-idx T)
     (σ : Subst Γ (thy-cls T i) C)
-    (ρ : subst (thy-ctx T i) Γ) →
-    Proof T (Subst-Formula σ (subst-Formula ρ (thy-axi T i)))
+    (r : ren (thy-ctx T i) Γ) →
+    Proof T (Subst-Formula σ (ren-Formula r (thy-axi T i)))
 
   ≈-refl : ∀ {Γ} {t : Term C Γ} → Proof T (t ≈ t)
 

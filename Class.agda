@@ -50,8 +50,8 @@ thy-ctx ST ext = ⟨⟩
 -- the axiom of extensionality: ∀x∀y.(x = y ⇔ ∀z.(z ∈ x ⇔ z ∈ y))
 thy-axi ST ext = all (all (svar (suc zero) ≈ svar zero ⇔ all (svar zero ∈ svar (suc (suc zero)) ⇔ svar zero ∈ svar (suc zero))))
 
-actP : ∀ {T C Γ Δ} {Φ : Formula C Γ} (ρ : subst Γ Δ) → Proof T Φ → Proof T (subst-Formula ρ Φ)
-actP ρ p = {!!}
+actP : ∀ {T C Γ Δ} {Φ : Formula C Γ} (r : ren Γ Δ) → Proof T Φ → Proof T (ren-Formula r Φ)
+actP r p = {!!}
 
 ActP : ∀ {T C D Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) → Proof T Φ → Proof T (Subst-Formula σ Φ)
 ActP σ p = {!!}
@@ -107,7 +107,7 @@ eliminability-main-theorem {Γ = Γ} (svar x ≈ class Φ) = ⇔-trans lemma1 le
     Φ+ = (extend-Formula-ctx Φ)
 
     lemma1 : Proof CT (svar x ≈ class Φ ⇔ all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class Φ+)))
-    lemma1 = axiom class≈class Subst-AB (λ y → svar x) -- NASTY HACK!!!
+    lemma1 = axiom class≈class Subst-AB (λ ()) -- hack
 
     lemma2 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class Φ+)) ⇔ (svar zero ∈ svar (suc x) ⇔ Φ+ [ svar zero ]F))
     lemma2 = ⇔-cong ⇔-refl ⇔-∈-subst
@@ -126,8 +126,67 @@ eliminability-main-theorem {Γ = Γ} (svar x ≈ class Φ) = ⇔-trans lemma1 le
 
     lemma7 : Proof CT (all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ (class Φ+)) ⇔ all (svar zero ∈ svar (suc x) ⇔ inj-formula (elim Φ)))
     lemma7 = all-cong lemma6
-eliminability-main-theorem (class Φ ≈ svar x) = {!  !}
-eliminability-main-theorem (class Φ ≈ class Ψ) = {!   !}
+eliminability-main-theorem {Γ = Γ} (class Φ ≈ svar x) = ⇔-trans lemma1 lemma7
+  where
+    Subst-AB : Subst Γ (thy-cls CT class≈class) 𝟘
+    Subst-AB A = class Φ
+    Subst-AB B = svar x
+
+    Φ+ : Formula₀ (extend (extend Γ))
+    Φ+ = (extend-Formula-ctx Φ)
+
+    lemma1 : Proof CT (class Φ ≈ svar x ⇔ all (svar zero ∈ (class Φ+) ⇔ svar zero ∈ svar (suc x)))
+    lemma1 = axiom class≈class Subst-AB (λ ()) -- hack
+
+    lemma2 : Proof CT ((svar zero ∈ (class Φ+) ⇔ svar zero ∈ svar (suc x)) ⇔ (Φ+ [ svar zero ]F ⇔ svar zero ∈ svar (suc x)))
+    lemma2 = ⇔-cong ⇔-∈-subst ⇔-refl
+
+    lemma3 : Proof CT ((Φ+ [ svar zero ]F ⇔ svar zero ∈ svar (suc x)) ⇔ (Φ ⇔ svar zero ∈ svar (suc x)))
+    lemma3 = ⇔-cong (eq-to-⇔ eq-subst-zero-Formula) ⇔-refl
+
+    lemma4 : Proof CT ((svar zero ∈ (class Φ+) ⇔ svar zero ∈ svar (suc x)) ⇔ (Φ ⇔ svar zero ∈ svar (suc x)))
+    lemma4 = ⇔-trans lemma2 lemma3
+
+    lemma5 : Proof CT ((Φ ⇔ svar zero ∈ svar (suc x)) ⇔ (inj-formula (elim Φ) ⇔ svar zero ∈ svar (suc x)))
+    lemma5 = ⇔-cong (eliminability-main-theorem Φ) ⇔-refl
+
+    lemma6 : Proof CT ((svar zero ∈ (class Φ+) ⇔ svar zero ∈ svar (suc x)) ⇔ (inj-formula (elim Φ) ⇔ svar zero ∈ svar (suc x)))
+    lemma6 = ⇔-trans lemma4 lemma5
+
+    lemma7 : Proof CT (all (svar zero ∈ (class Φ+) ⇔ svar zero ∈ svar (suc x)) ⇔ all (inj-formula (elim Φ) ⇔ svar zero ∈ svar (suc x)))
+    lemma7 = all-cong lemma6
+eliminability-main-theorem {Γ = Γ} (class Φ ≈ class Ψ) = ⇔-trans lemma1 lemma7
+  where
+    Subst-AB : Subst Γ (thy-cls CT class≈class) 𝟘
+    Subst-AB A = class Φ
+    Subst-AB B = class Ψ
+
+    Φ+ : Formula₀ (extend (extend Γ))
+    Φ+ = (extend-Formula-ctx Φ)
+
+    Ψ+ : Formula₀ (extend (extend Γ))
+    Ψ+ = (extend-Formula-ctx Ψ)
+
+    lemma1 : Proof CT (class Φ ≈ class Ψ ⇔ all (svar zero ∈ (class Φ+) ⇔ svar zero ∈ (class Ψ+)))
+    lemma1 = axiom class≈class Subst-AB (λ ()) -- hack
+
+    lemma2 : Proof CT ((svar zero ∈ (class Φ+) ⇔ svar zero ∈ (class Ψ+)) ⇔ (Φ+ [ svar zero ]F ⇔ Ψ+ [ svar zero ]F))
+    lemma2 = ⇔-cong ⇔-∈-subst ⇔-∈-subst
+
+    lemma3 : Proof CT ((Φ+ [ svar zero ]F ⇔ Ψ+ [ svar zero ]F) ⇔ (Φ ⇔ Ψ))
+    lemma3 = ⇔-cong (eq-to-⇔ eq-subst-zero-Formula) (eq-to-⇔ eq-subst-zero-Formula)
+
+    lemma4 : Proof CT ((svar zero ∈ (class Φ+) ⇔ svar zero ∈ (class Ψ+)) ⇔ (Φ ⇔ Ψ))
+    lemma4 = ⇔-trans lemma2 lemma3
+
+    lemma5 : Proof CT ((Φ ⇔ Ψ) ⇔ (inj-formula (elim Φ) ⇔ inj-formula (elim Ψ)))
+    lemma5 = ⇔-cong (eliminability-main-theorem Φ) (eliminability-main-theorem Ψ)
+
+    lemma6 : Proof CT ((svar zero ∈ (class Φ+) ⇔ svar zero ∈ (class Ψ+)) ⇔ (inj-formula (elim Φ) ⇔ inj-formula (elim Ψ)))
+    lemma6 = ⇔-trans lemma4 lemma5
+
+    lemma7 : Proof CT (all (svar zero ∈ (class Φ+) ⇔ svar zero ∈ (class Ψ+)) ⇔ all (inj-formula (elim Φ) ⇔ inj-formula (elim Ψ)))
+    lemma7 = all-cong lemma6
 eliminability-main-theorem (svar x ∈ svar y) = ⇔-refl
 eliminability-main-theorem {Γ = Γ} (svar x ∈ class Φ) =
   ⇔-trans
