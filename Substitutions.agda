@@ -1,5 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 open import Syntax public
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans; sym) renaming (subst to ≡-subst) public
@@ -28,7 +26,7 @@ ren-formula r (all φ) = all (ren-formula (extend-ren r) φ)
 mutual
   ren-Term : ∀ {C Γ Δ} → ren Γ Δ → Term C Γ → Term C Δ
   ren-Term r (svar x) = svar (r x)
-  ren-Term r (cvar A) = cvar A
+  ren-Term r (cvar c) = cvar c
   ren-Term r (class Φ) = class (ren-Formula (extend-ren r) Φ)
 
   ren-Formula : ∀ {C Γ Δ} → ren Γ Δ → Formula C Γ → Formula C Δ
@@ -39,11 +37,15 @@ mutual
   ren-Formula r (¬ Φ) = ¬ (ren-Formula r Φ)
   ren-Formula r (all Φ) = all (ren-Formula (extend-ren r) Φ)
 
+-- Simple renaming of the first de Bruijn index in the context
+
+ren₀ : ∀ {Γ} (x : Var Γ) → ren (extend Γ) Γ
+ren₀ x zero = x
+ren₀ x (suc y) = y
 
 -- Renamings give us substitutions.
 
-Subst : Ctx → Set → Set → Set
-Subst Γ C D  = C → Term D Γ
+-- We currently don't need substitutions from set variables to set terms, because they are subsumed by renamings.
 
 subst : Ctx → Ctx → Set
 subst Γ Δ = Var Γ → term Δ
@@ -77,11 +79,23 @@ mutual
   subst-Formula ρ (¬ Φ) = ¬ (subst-Formula ρ Φ)
   subst-Formula ρ (all Φ) = all (subst-Formula (extend-subst ρ) Φ) -- need to skip bound variable x in ∀x.Φ
 
-compRS : ∀ {Γ Δ C D} → ren Γ Δ → Subst Γ C D → Subst Δ C D
-compRS r σ x = ren-Term r (σ x)
+-- Simple substitution of one term
+
+subst₀ : ∀ {Γ : Ctx} → term Γ → subst (extend Γ) Γ
+subst₀ t zero = t
+subst₀ t (suc x) = svar x
+
+
+-- Substitutions from class variables to class terms
+
+Subst : Ctx → Set → Set → Set
+Subst Γ C D  = C → Term D Γ
+
+comp-rS : ∀ {Γ Δ C D} → ren Γ Δ → Subst Γ C D → Subst Δ C D
+comp-rS r σ x = ren-Term r (σ x)
 
 extend-Subst : ∀ {Γ C D} → Subst Γ C D → Subst (extend Γ) C D
-extend-Subst σ = compRS suc σ
+extend-Subst σ = comp-rS suc σ
 
 mutual
   Subst-Term : ∀ {C D : Set} {Γ} → Subst Γ C D → Term C Γ → Term D Γ
@@ -97,20 +111,16 @@ mutual
   Subst-Formula σ (¬ Φ) = ¬ (Subst-Formula σ Φ)
   Subst-Formula σ (all Φ) = all (Subst-Formula (extend-Subst σ) Φ)
 
--- Simple substitution of one term
-
-subst₀ : ∀ {Γ : Ctx} → term Γ → subst (extend Γ) Γ
-subst₀ t zero = t
-subst₀ t (suc x) = svar x
+-- Simple subtitutions for the main constructs
 
 _[_]F : ∀ {Γ C} → Formula C (extend Γ) → term Γ → Formula C Γ
-Φ [ t ]F = subst-Formula (subst₀ t) Φ
+Φ [ svar x ]F = (ren-Formula (ren₀ x)) Φ
 
 _[_]T : ∀ {Γ C} → Term C (extend Γ) → term Γ → Term C Γ
-t [ u ]T = subst-Term (subst₀ u) t
+t [ svar x ]T = (ren-Term (ren₀ x)) t
 
 _[_]f : ∀ {Γ} → formula (extend Γ) → term Γ → formula Γ
-φ [ t ]f = subst-formula (subst₀ t) φ
+φ [ svar x ]f = (ren-formula (ren₀ x)) φ
 
 
 -- Infrastructure for extending other constructs
@@ -133,9 +143,6 @@ extend-Formula = ren-Formula suc
 extend-Formula-ctx : ∀ {Γ C} → Formula C (extend Γ) → Formula C (extend (extend Γ))
 extend-Formula-ctx = ren-Formula (extend-ren suc)
 
-contract : ∀ {Γ} → ren (extend (extend Γ)) (extend Γ)
-contract zero = zero
-contract (suc x) = x
 
 id-ren : ∀ {Γ} → ren Γ Γ
 id-ren x = x
@@ -145,9 +152,6 @@ postulate
 
 extend-preserves-id-ren : ∀ {Γ} → (extend-ren (id-ren {Γ})) ≡ id-ren {extend Γ}
 extend-preserves-id-ren = fun-ext (λ {zero → refl ; (suc x) → refl})
-
-contract-extend-ren-suc-id : ∀ {Γ} → contract ∘ (extend-ren {Γ = Γ} suc) ≡ id-ren
-contract-extend-ren-suc-id = fun-ext λ {zero → refl ; (suc x) → refl}
 
 mutual
   id-ren-Term : ∀ {C Γ} {t : Term C Γ} → (ren-Term id-ren) t ≡ t
@@ -173,27 +177,52 @@ mutual
         (cong (λ r → ren-Formula r Φ) extend-preserves-id-ren)
         (id-ren-Formula {Φ = Φ}))
 
-ren-comp-Formula : ∀ {C Γ Δ Ω} {Φ : Formula C Γ} (r : ren Γ Δ) (r' : ren Δ Ω) → ren-Formula r' (ren-Formula r Φ) ≡ ren-Formula (r' ∘ r) Φ
-ren-comp-Formula = {!   !}
+extend-comp-commute : ∀ {Γ Δ Ω} → (r : ren Γ Δ) (r' : ren Δ Ω) → extend-ren r' ∘ extend-ren r ≡ extend-ren (r' ∘ r)
+extend-comp-commute r r' = fun-ext λ {zero → refl ; (suc x) → refl}
 
-ren₀ : ∀ {Γ} (x : Var Γ) → ren (extend Γ) Γ
-ren₀ x zero = x
-ren₀ x (suc y) = y
+mutual
+  ren-comp-Term : ∀ {C Γ Δ Ω} {t : Term C Γ} (r : ren Γ Δ) (r' : ren Δ Ω) → ren-Term r' (ren-Term r t) ≡ ren-Term (r' ∘ r) t
+  ren-comp-Term {t = svar x} r r' = refl
+  ren-comp-Term {t = cvar c} r r' = refl
+  ren-comp-Term {t = class Φ} r r' =
+    cong
+      class
+      (≡-subst
+        (λ f → ren-Formula (extend-ren r') (ren-Formula (extend-ren r) Φ) ≡ ren-Formula f Φ)
+        (extend-comp-commute r r')
+        (ren-comp-Formula {Φ = Φ} (extend-ren r) (extend-ren r')))
 
-ren-is-subst-var-Formula : ∀ {C Γ} {Φ : Formula C (extend Γ)} {x : Var Γ} → Φ [ svar x ]F ≡ (ren-Formula (ren₀ x)) Φ
-ren-is-subst-var-Formula = {!    !}
+  ren-comp-Formula : ∀ {C Γ Δ Ω} {Φ : Formula C Γ} (r : ren Γ Δ) (r' : ren Δ Ω) → ren-Formula r' (ren-Formula r Φ) ≡ ren-Formula (r' ∘ r) Φ
+  ren-comp-Formula {Φ = t ≈ u} r r' = cong₂ _≈_ (ren-comp-Term r r') (ren-comp-Term r r')
+  ren-comp-Formula {Φ = t ∈ u} r r' = cong₂ _∈_ (ren-comp-Term r r') (ren-comp-Term r r')
+  ren-comp-Formula {Φ = Φ ∧ Ψ} r r' = cong₂ _∧_ (ren-comp-Formula r r') (ren-comp-Formula r r')
+  ren-comp-Formula {Φ = Φ ⇔ Ψ} r r' = cong₂ _⇔_ (ren-comp-Formula r r') (ren-comp-Formula r r')
+  ren-comp-Formula {Φ = ¬ Φ} r r' = cong ¬_ (ren-comp-Formula r r')
+  ren-comp-Formula {Φ = all Φ} r r' =
+    cong
+      all
+      (≡-subst
+        (λ f → ren-Formula (extend-ren r') (ren-Formula (extend-ren r) Φ) ≡ ren-Formula f Φ)
+        (extend-comp-commute r r')
+        (ren-comp-Formula {Φ = Φ} (extend-ren r) (extend-ren r')))
 
-ren-is-subst-var-formula : ∀ {Γ} {φ : formula (extend Γ)} {x : Var Γ} → φ [ svar x ]f ≡ ren-formula (ren₀ x) φ
-ren-is-subst-var-formula = {!   !}
+subst-inj-commute-ren : ∀ {Γ Δ C} {φ : formula (extend Γ)} (r : ren (extend Γ) Δ) →
+  ren-Formula {C = C} r (inj-formula φ) ≡ inj-formula (ren-formula r φ)
+subst-inj-commute-ren {φ = svar x ≈ svar y} r = refl
+subst-inj-commute-ren {φ = svar x ∈ svar y} r = refl
+subst-inj-commute-ren {φ = φ ∧ ψ} r = cong₂ _∧_ (subst-inj-commute-ren r) (subst-inj-commute-ren r)
+subst-inj-commute-ren {φ = φ ⇔ ψ} r = cong₂ _⇔_ (subst-inj-commute-ren r) (subst-inj-commute-ren r)
+subst-inj-commute-ren {φ = ¬ φ} r = cong ¬_ (subst-inj-commute-ren r)
+subst-inj-commute-ren {φ = all φ} r = cong all (subst-inj-commute-ren (extend-ren r))
 
-subst-inj-commute-ren : ∀ {Γ C} {φ : formula (extend Γ)} {x : Var Γ} →
+subst-inj-commute-ren-zero : ∀ {Γ C} {φ : formula (extend Γ)} {x : Var Γ} →
   ren-Formula {C = C} (ren₀ x) (inj-formula φ) ≡ inj-formula (ren-formula (ren₀ x) φ)
-subst-inj-commute-ren = {!  !}
+subst-inj-commute-ren-zero {x = x} = subst-inj-commute-ren (ren₀ x)
 
-subst-zero-is-contract-Formula : ∀ {C Γ} {Φ : Formula C (extend (extend Γ))} → Φ [ svar zero ]F ≡ (ren-Formula contract) Φ
-subst-zero-is-contract-Formula = {!  !}
+ren-zero-extend-ctx-id : ∀ {Γ} → (ren₀ {Γ = extend Γ} zero) ∘ (extend-ren suc) ≡ id-ren
+ren-zero-extend-ctx-id = fun-ext λ {zero → refl ; (suc x) → refl}
 
 record Sbs (C : Set) (Γ : Ctx) (D : Set) (Δ : Ctx) : Set where
   field
     sbs-cls : C → Term D Δ
-    sbs-set : Var Γ → term Δ
+    sbs-set : ren Γ Δ

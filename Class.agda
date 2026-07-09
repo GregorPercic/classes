@@ -76,14 +76,6 @@ subst-dist-⇔ x p = all-elim (all-intro p)
 eq-to-⇔ : ∀ {Γ C T} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof T (Φ ⇔ Ψ)
 eq-to-⇔ refl = ⇔-refl
 
-subst-inj-commute : ∀ {Γ} {φ : formula (extend Γ)} {x : Var Γ} → _[_]F {C = 𝟘} (inj-formula φ) (svar x) ≡ inj-formula (φ [ svar x ]f)
-subst-inj-commute {φ = φ} =
-  trans
-    ren-is-subst-var-Formula
-    (trans
-      subst-inj-commute-ren
-      (cong inj-formula (sym ren-is-subst-var-formula)))
-
 axiom-unsubst : 
   ∀ {T} (i : thy-idx T) →
   -----------------------
@@ -94,13 +86,13 @@ axiom-unsubst i = {!  !}
 ⇔-∈-subst {Γ} {Φ} = axiom-unsubst (set∈class 0 (extend Γ) zero (extend-Formula-ctx Φ))
 
 eq-subst-zero-Formula : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → (extend-Formula-ctx Φ) [ svar zero ]F ≡ Φ
-eq-subst-zero-Formula {Φ = Φ} = trans
-    (≡-subst
-      (λ f → (extend-Formula-ctx Φ [ svar zero ]F) ≡ ren-Formula f Φ)
-      contract-extend-ren-suc-id
-      (trans
-        (subst-zero-is-contract-Formula {Φ = (extend-Formula-ctx Φ)})
-        (ren-comp-Formula (extend-ren suc) contract)))
+eq-subst-zero-Formula {Φ = Φ} =
+  trans
+    (trans
+      (ren-comp-Formula (extend-ren suc) (ren₀ zero))
+      (cong
+        (λ f → ren-Formula f Φ)
+        ren-zero-extend-ctx-id))
     id-ren-Formula
 
 eliminability-main-theorem : ∀ {Γ} (Φ : Formula₀ Γ) → Proof CT (Φ ⇔ (inj-formula (elim Φ)))
@@ -140,7 +132,7 @@ eliminability-main-theorem (svar x ∈ svar y) = ⇔-refl
 eliminability-main-theorem {Γ = Γ} (svar x ∈ class Φ) =
   ⇔-trans
     lemma
-    (eq-to-⇔ (subst-inj-commute {φ = elim Φ}))
+    (eq-to-⇔ (subst-inj-commute-ren-zero {φ = elim Φ}))
   where
     lemma : Proof CT (svar x ∈ class Φ ⇔ (inj-formula (elim Φ)) [ svar x ]F)
     lemma =
@@ -161,7 +153,7 @@ corollary : ∀ C {Γ} (Φ : Formula C Γ) (σ : Subst Γ C 𝟘) → ∃[ φ ] 
 corollary C Φ σ = elim (Subst-Formula σ Φ) , eliminability C Φ σ
 
 
--- eliminability-The conservation theorem 
+-- The conservation theorem 
 
 _↔_ : Set → Set → Set
 ty ↔ ty' = (ty → ty') × (ty' → ty)
