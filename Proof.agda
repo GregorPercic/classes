@@ -61,3 +61,8 @@ data Proof (T : Theory) {C : Set} : {Γ : Ctx} → Formula C Γ → Set where
     Proof T (Φ' ⇔ Φ'') →
     ---------------------
     Proof T (Φ ⇔ Φ'')
+  
+  exists-cong : ∀ {Γ} {Φ Φ' : Formula C (extend Γ)} →
+    Proof T (Φ ⇔ Φ') →
+    ------------------------------
+    Proof T (exists Φ ⇔ exists Φ')

@@ -1,7 +1,7 @@
 open import Syntax public
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; trans; sym) renaming (subst to ≡-subst) public
-open import Function.Base using (_∘_)
+open import Function.Base using (_∘_) public
 
 -- We define renamings first.
 
@@ -22,6 +22,7 @@ ren-formula r (φ ∧ ψ) = ren-formula r φ ∧ ren-formula r ψ
 ren-formula r (φ ⇔ ψ) = ren-formula r φ ⇔ ren-formula r ψ
 ren-formula r (¬ φ) = ¬ (ren-formula r φ)
 ren-formula r (all φ) = all (ren-formula (extend-ren r) φ)
+ren-formula r (exists φ) = exists (ren-formula (extend-ren r) φ)
 
 mutual
   ren-Term : ∀ {C Γ Δ} → ren Γ Δ → Term C Γ → Term C Δ
@@ -36,6 +37,7 @@ mutual
   ren-Formula r (Φ ⇔ Ψ) = ren-Formula r Φ ⇔ ren-Formula r Ψ
   ren-Formula r (¬ Φ) = ¬ (ren-Formula r Φ)
   ren-Formula r (all Φ) = all (ren-Formula (extend-ren r) Φ)
+  ren-Formula r (exists Φ) = exists (ren-Formula (extend-ren r) Φ)
 
 -- Simple renaming of the first de Bruijn index in the context
 
@@ -64,6 +66,7 @@ subst-formula ρ (φ ∧ ψ) = subst-formula ρ φ ∧ subst-formula ρ ψ
 subst-formula ρ (φ ⇔ ψ) = subst-formula ρ φ ⇔ subst-formula ρ ψ
 subst-formula ρ (¬ φ) = ¬ (subst-formula ρ φ)
 subst-formula ρ (all φ) = all (subst-formula (extend-subst ρ) φ)
+subst-formula ρ (exists φ) = exists (subst-formula (extend-subst ρ) φ)
 
 mutual
   subst-Term : ∀ {C : Set} {Γ Δ} → subst Γ Δ → Term C Γ → Term C Δ
@@ -78,6 +81,7 @@ mutual
   subst-Formula ρ (Φ ⇔ Ψ) = (subst-Formula ρ Φ) ⇔ (subst-Formula ρ Ψ)
   subst-Formula ρ (¬ Φ) = ¬ (subst-Formula ρ Φ)
   subst-Formula ρ (all Φ) = all (subst-Formula (extend-subst ρ) Φ) -- need to skip bound variable x in ∀x.Φ
+  subst-Formula ρ (exists Φ) = exists (subst-Formula (extend-subst ρ) Φ) -- need to skip bound variable x in ∃x.Φ
 
 -- Simple substitution of one term
 
@@ -110,6 +114,7 @@ mutual
   Subst-Formula σ (Φ ⇔ Ψ) = (Subst-Formula σ Φ) ⇔ (Subst-Formula σ Ψ)
   Subst-Formula σ (¬ Φ) = ¬ (Subst-Formula σ Φ)
   Subst-Formula σ (all Φ) = all (Subst-Formula (extend-Subst σ) Φ)
+  Subst-Formula σ (exists Φ) = exists (Subst-Formula (extend-Subst σ) Φ)
 
 -- Simple subtitutions for the main constructs
 
@@ -148,7 +153,7 @@ id-ren : ∀ {Γ} → ren Γ Γ
 id-ren x = x
 
 postulate
-  fun-ext : ∀ {A : Set} {B : A → Set} {f g : (x : A) → B x} → (∀ x → f x ≡ g x) → f ≡ g
+  fun-ext : ∀ {A B : Set} {f g : A → B} → (∀ x → f x ≡ g x) → f ≡ g
 
 extend-preserves-id-ren : ∀ {Γ} → (extend-ren (id-ren {Γ})) ≡ id-ren {extend Γ}
 extend-preserves-id-ren = fun-ext (λ {zero → refl ; (suc x) → refl})
@@ -173,6 +178,12 @@ mutual
   id-ren-Formula {Φ = all Φ} =
     cong
       all
+      (trans
+        (cong (λ r → ren-Formula r Φ) extend-preserves-id-ren)
+        (id-ren-Formula {Φ = Φ}))
+  id-ren-Formula {Φ = exists Φ} =
+    cong
+      exists
       (trans
         (cong (λ r → ren-Formula r Φ) extend-preserves-id-ren)
         (id-ren-Formula {Φ = Φ}))
@@ -205,6 +216,34 @@ mutual
         (λ f → ren-Formula (extend-ren r') (ren-Formula (extend-ren r) Φ) ≡ ren-Formula f Φ)
         (extend-comp-commute r r')
         (ren-comp-Formula {Φ = Φ} (extend-ren r) (extend-ren r')))
+  ren-comp-Formula {Φ = exists Φ} r r' =
+    cong
+      exists
+      (≡-subst
+        (λ f → ren-Formula (extend-ren r') (ren-Formula (extend-ren r) Φ) ≡ ren-Formula f Φ)
+        (extend-comp-commute r r')
+        (ren-comp-Formula {Φ = Φ} (extend-ren r) (extend-ren r')))
+
+ren-comp-formula : ∀ {Γ Δ Ω} {φ : formula Γ} (r : ren Γ Δ) (r' : ren Δ Ω) → ren-formula r' (ren-formula r φ) ≡ ren-formula (r' ∘ r) φ
+ren-comp-formula {φ = svar x ≈ svar y} r r' = refl
+ren-comp-formula {φ = svar x ∈ svar y} r r' = refl
+ren-comp-formula {φ = φ ∧ ψ} r r' = cong₂ _∧_ (ren-comp-formula r r') (ren-comp-formula r r')
+ren-comp-formula {φ = φ ⇔ ψ} r r' = cong₂ _⇔_ (ren-comp-formula r r') (ren-comp-formula r r')
+ren-comp-formula {φ = ¬ φ} r r' = cong ¬_ (ren-comp-formula r r')
+ren-comp-formula {φ = all φ} r r' =
+  cong
+    all
+    (≡-subst
+      (λ f → ren-formula (extend-ren r') (ren-formula (extend-ren r) φ) ≡ ren-formula f φ)
+      (extend-comp-commute r r')
+      (ren-comp-formula {φ = φ} (extend-ren r) (extend-ren r')))
+ren-comp-formula {φ = exists φ} r r' =
+  cong
+    exists
+    (≡-subst
+      (λ f → ren-formula (extend-ren r') (ren-formula (extend-ren r) φ) ≡ ren-formula f φ)
+      (extend-comp-commute r r')
+      (ren-comp-formula {φ = φ} (extend-ren r) (extend-ren r')))
 
 subst-inj-commute-ren : ∀ {Γ Δ C} {φ : formula (extend Γ)} (r : ren (extend Γ) Δ) →
   ren-Formula {C = C} r (inj-formula φ) ≡ inj-formula (ren-formula r φ)
@@ -214,6 +253,7 @@ subst-inj-commute-ren {φ = φ ∧ ψ} r = cong₂ _∧_ (subst-inj-commute-ren 
 subst-inj-commute-ren {φ = φ ⇔ ψ} r = cong₂ _⇔_ (subst-inj-commute-ren r) (subst-inj-commute-ren r)
 subst-inj-commute-ren {φ = ¬ φ} r = cong ¬_ (subst-inj-commute-ren r)
 subst-inj-commute-ren {φ = all φ} r = cong all (subst-inj-commute-ren (extend-ren r))
+subst-inj-commute-ren {φ = exists φ} r = cong exists (subst-inj-commute-ren (extend-ren r))
 
 subst-inj-commute-ren-zero : ∀ {Γ C} {φ : formula (extend Γ)} {x : Var Γ} →
   ren-Formula {C = C} (ren₀ x) (inj-formula φ) ≡ inj-formula (ren-formula (ren₀ x) φ)
@@ -221,6 +261,9 @@ subst-inj-commute-ren-zero {x = x} = subst-inj-commute-ren (ren₀ x)
 
 ren-zero-extend-ctx-id : ∀ {Γ} → (ren₀ {Γ = extend Γ} zero) ∘ (extend-ren suc) ≡ id-ren
 ren-zero-extend-ctx-id = fun-ext λ {zero → refl ; (suc x) → refl}
+
+extend-suc-lemma : ∀ {Γ Δ} (r : ren Γ Δ) → (extend-ren suc) ∘ (extend-ren r) ≡ (extend-ren (extend-ren r)) ∘ (extend-ren suc)
+extend-suc-lemma r = fun-ext λ {zero → refl ; (suc x) → refl}
 
 record Sbs (C : Set) (Γ : Ctx) (D : Set) (Δ : Ctx) : Set where
   field

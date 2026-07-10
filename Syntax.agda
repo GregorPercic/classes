@@ -30,6 +30,7 @@ data formula (Γ : Ctx) : Set where
   _⇔_ : formula Γ → formula Γ → formula Γ
   ¬_ : formula Γ → formula Γ
   all : formula (extend Γ) → formula Γ
+  exists : formula (extend Γ) → formula Γ
 
 mutual
   data Term (C : Set) (Γ : Ctx) : Set where
@@ -44,12 +45,7 @@ mutual
     _⇔_ : Formula C Γ → Formula C Γ → Formula C Γ
     ¬_ : Formula C Γ → Formula C Γ
     all : Formula C (extend Γ) → Formula C Γ
-
-some : ∀ {Γ} → formula (extend Γ) → formula Γ
-some φ = ¬ (all (¬ φ))
-
-exists : ∀ {C Γ} → Formula C (extend Γ) → Formula C Γ
-exists Φ = ¬ (all (¬ Φ))
+    exists : Formula C (extend Γ) → Formula C Γ
 
 Term₀ : (Γ : Ctx) → Set
 Term₀ = Term 𝟘
@@ -67,3 +63,4 @@ inj-formula (ϕ ∧ ψ) = (inj-formula ϕ) ∧ (inj-formula ψ)
 inj-formula (ϕ ⇔ ψ) = (inj-formula ϕ) ⇔ (inj-formula ψ)
 inj-formula (¬ ϕ) = ¬ inj-formula ϕ
 inj-formula (all ϕ) = all (inj-formula ϕ)
+inj-formula (exists ϕ) = exists (inj-formula ϕ)
