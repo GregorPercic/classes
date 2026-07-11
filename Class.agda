@@ -50,11 +50,72 @@ thy-ctx ST ext = ⟨⟩
 -- the axiom of extensionality: ∀x∀y.(x = y ⇔ ∀z.(z ∈ x ⇔ z ∈ y))
 thy-axi ST ext = all (all (svar (suc zero) ≈ svar zero ⇔ all (svar zero ∈ svar (suc (suc zero)) ⇔ svar zero ∈ svar (suc zero))))
 
-ren-Proof : ∀ {T C Γ Δ} {Φ : Formula C Γ} (r : ren Γ Δ) → Proof T Φ → Proof T (ren-Formula r Φ)
-ren-Proof r p = {!!}
+extend-comp-rS-commute : ∀ {C D Γ Δ} (r : ren Γ Δ) (σ : Subst Γ C D) →
+  comp-rS (extend-ren r) (extend-Subst σ) ≡ extend-Subst (comp-rS r σ)
+extend-comp-rS-commute {C = C} r σ = fun-ext lemma
+  where
+    lemma : (x : C) →
+      comp-rS (extend-ren r) (extend-Subst σ) x ≡ extend-Subst (comp-rS r σ) x
+    lemma x = renaming-suc-commute-Term r
 
-Subst-Proof : ∀ {T C D Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) → Proof T Φ → Proof T (Subst-Formula σ Φ)
-Subst-Proof σ p = {!!}
+mutual
+  comp-rS-Term : ∀ {C D Γ Δ} {t : Term C Γ} (σ : Subst Γ C D) (r : ren Γ Δ) →
+    ren-Term r (Subst-Term σ t) ≡ Subst-Term (comp-rS r σ) (ren-Term r t)
+  comp-rS-Term {t = svar x} σ r = refl
+  comp-rS-Term {t = cvar c} σ r = refl
+  comp-rS-Term {t = class Φ} σ r =
+    cong
+      class
+      (trans
+        (comp-rS-Formula {Φ = Φ} (extend-Subst σ) (extend-ren r))
+        (cong
+          (λ σ' → Subst-Formula σ' (ren-Formula (extend-ren r) Φ))
+          (extend-comp-rS-commute r σ)))
+
+  comp-rS-Formula : ∀ {C D Γ Δ} {Φ : Formula C Γ} (σ : Subst Γ C D) (r : ren Γ Δ) →
+    ren-Formula r (Subst-Formula σ Φ) ≡ Subst-Formula (comp-rS r σ) (ren-Formula r Φ)
+  comp-rS-Formula {Φ = t ≈ u} σ r = cong₂ _≈_ (comp-rS-Term {t = t} σ r) (comp-rS-Term {t = u} σ r)
+  comp-rS-Formula {Φ = t ∈ u} σ r = cong₂ _∈_ (comp-rS-Term {t = t} σ r) (comp-rS-Term {t = u} σ r)
+  comp-rS-Formula {Φ = Φ ∧ Ψ} σ r = cong₂ _∧_ (comp-rS-Formula {Φ = Φ} σ r) (comp-rS-Formula {Φ = Ψ} σ r)
+  comp-rS-Formula {Φ = Φ ⇔ Ψ} σ r = cong₂ _⇔_ (comp-rS-Formula {Φ = Φ} σ r) (comp-rS-Formula {Φ = Ψ} σ r)
+  comp-rS-Formula {Φ = ¬ Φ} σ r = cong ¬_ (comp-rS-Formula {Φ = Φ} σ r)
+  comp-rS-Formula {Φ = all Φ} σ r =
+    cong
+      all
+      (trans
+        (comp-rS-Formula {Φ = Φ} (extend-Subst σ) (extend-ren r))
+        (cong
+          (λ σ' → Subst-Formula σ' (ren-Formula (extend-ren r) Φ))
+          (extend-comp-rS-commute r σ)))
+  comp-rS-Formula {Φ = exists Φ} σ r =
+    cong
+      exists
+      (trans
+        (comp-rS-Formula {Φ = Φ} (extend-Subst σ) (extend-ren r))
+        (cong
+          (λ σ' → Subst-Formula σ' (ren-Formula (extend-ren r) Φ))
+          (extend-comp-rS-commute r σ)))
+
+ren-Proof : ∀ {T C Γ Δ} {Φ : Formula C Γ} (r : ren Γ Δ) → Proof T Φ → Proof T (ren-Formula r Φ)
+ren-Proof {T = T} r (axiom i σ r') =
+  ≡-subst
+    (λ Ξ → Proof T Ξ)
+    (sym
+      (trans
+        (comp-rS-Formula {Φ = ren-Formula r' (thy-axi T i)} σ r)
+        (cong (λ Ξ → Subst-Formula (comp-rS r σ) Ξ) (ren-comp-Formula r' r))))
+    (axiom i (comp-rS r σ) (r ∘ r'))
+ren-Proof r (all-intro p) = all-intro (ren-Proof (extend-ren r) p)
+ren-Proof r ⇔-refl = ⇔-refl
+ren-Proof r (∧-cong p p') = ∧-cong (ren-Proof r p) (ren-Proof r p')
+ren-Proof r (⇔-cong p p') = ⇔-cong (ren-Proof r p) (ren-Proof r p')
+ren-Proof r (¬-cong p) = ¬-cong (ren-Proof r p)
+ren-Proof r (all-cong p) = all-cong (ren-Proof (extend-ren r) p)
+ren-Proof r (⇔-trans p p') = ⇔-trans (ren-Proof r p) (ren-Proof r p')
+ren-Proof r (exists-cong p) = exists-cong (ren-Proof (extend-ren r) p)
+
+-- Subst-Proof : ∀ {T C D Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) → Proof T Φ → Proof T (Subst-Formula σ Φ)
+-- Subst-Proof σ p = {!!}
 
 elim : ∀ {Γ} → Formula₀ Γ → formula Γ
 elim (svar x ≈ svar y) = svar x ≈ svar y
@@ -72,7 +133,7 @@ elim (all Φ) = all (elim Φ)
 elim (exists Φ) = exists (elim Φ)
 
 subst-dist-⇔ : ∀ {Γ T} {Φ Ψ : Formula₀ (extend Γ)} (x : Var Γ) → Proof T (Φ ⇔ Ψ) → Proof T (Φ [ svar x ]F ⇔ Ψ [ svar x ]F)
-subst-dist-⇔ x p = all-elim (all-intro p)
+subst-dist-⇔ x p = ren-Proof (ren₀ x) p -- all-elim (all-intro p) ; if we can cope with having all-elim
 
 eq-to-⇔ : ∀ {Γ C T} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof T (Φ ⇔ Ψ)
 eq-to-⇔ refl = ⇔-refl

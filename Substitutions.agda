@@ -265,6 +265,18 @@ ren-zero-extend-ctx-id = fun-ext λ {zero → refl ; (suc x) → refl}
 extend-suc-lemma : ∀ {Γ Δ} (r : ren Γ Δ) → (extend-ren suc) ∘ (extend-ren r) ≡ (extend-ren (extend-ren r)) ∘ (extend-ren suc)
 extend-suc-lemma r = fun-ext λ {zero → refl ; (suc x) → refl}
 
+renaming-suc-commute : ∀ {Γ Δ} (r : ren Γ Δ) → (extend-ren r) ∘ suc ≡ suc ∘ r
+renaming-suc-commute r = fun-ext λ {zero → refl ; (suc x) → refl}
+
+renaming-suc-commute-Term : ∀ {C Γ Δ} {t : Term C Γ} (r : ren Γ Δ) →
+  ren-Term (extend-ren r) (ren-Term suc t) ≡ ren-Term suc (ren-Term r t)
+renaming-suc-commute-Term {t = t} r =
+  trans
+    (trans
+      (ren-comp-Term suc (extend-ren r))
+      (cong (λ r' → ren-Term r' t) (renaming-suc-commute r)))
+    (sym (ren-comp-Term r suc))
+
 record Sbs (C : Set) (Γ : Ctx) (D : Set) (Δ : Ctx) : Set where
   field
     sbs-cls : C → Term D Δ

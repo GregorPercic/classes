@@ -11,21 +11,6 @@ data Proof (T : Theory) {C : Set} : {Γ : Ctx} → Formula C Γ → Set where
     (r : ren (thy-ctx T i) Γ) →
     Proof T (Subst-Formula σ (ren-Formula r (thy-axi T i)))
 
-  ≈-refl : ∀ {Γ} {t : Term C Γ} → Proof T (t ≈ t)
-
-  ∧-intro :
-    ∀ {Γ} {Φ Ψ : Formula C Γ} →
-    Proof T Φ →
-    Proof T Ψ →
-    ---------------
-    Proof T (Φ ∧ Ψ)
-
-  all-elim :
-    ∀ {Γ} {Φ : Formula C (extend Γ)} {t : term Γ} →
-    Proof T (all Φ) →
-    -----------------
-    Proof T (Φ [ t ]F)
-
   all-intro :
     ∀ {Γ} {Φ : Formula C (extend Γ)} →
     Proof T Φ →
