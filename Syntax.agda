@@ -2,10 +2,11 @@ open import Data.Empty renaming (⊥ to 𝟘) public
 open import Data.Nat using (ℕ ; suc) public
 open import Data.Fin using (Fin ; zero ; suc) public
 
-⟨⟩ = 0 -- empty context
 
 Ctx = ℕ
 Var = Fin
+
+⟨⟩ = 0 -- empty context
 
 Fin-with-𝟘 : ℕ → Set
 Fin-with-𝟘 ℕ.zero = 𝟘
@@ -59,8 +60,8 @@ inj-term (svar x) = svar x
 inj-formula : ∀ {Γ C} → formula Γ → Formula C Γ
 inj-formula (t ≈ u) = (inj-term t) ≈ (inj-term u)
 inj-formula (t ∈ u) = (inj-term t) ∈ (inj-term u)
-inj-formula (ϕ ∧ ψ) = (inj-formula ϕ) ∧ (inj-formula ψ)
-inj-formula (ϕ ⇔ ψ) = (inj-formula ϕ) ⇔ (inj-formula ψ)
-inj-formula (¬ ϕ) = ¬ inj-formula ϕ
-inj-formula (all ϕ) = all (inj-formula ϕ)
-inj-formula (exists ϕ) = exists (inj-formula ϕ)
+inj-formula (φ ∧ ψ) = (inj-formula φ) ∧ (inj-formula ψ)
+inj-formula (φ ⇔ ψ) = (inj-formula φ) ⇔ (inj-formula ψ)
+inj-formula (¬ φ) = ¬ inj-formula φ
+inj-formula (all φ) = all (inj-formula φ)
+inj-formula (exists φ) = exists (inj-formula φ)

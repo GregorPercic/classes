@@ -1,9 +1,8 @@
 open import Syntax
 open import Substitutions
-
 open import Theory
 
--- The notion of proof: maybe notation "p : T ⊢ ϕ" means p is a proof of Φ in T
+
 data Proof (T : Theory) {C : Set} : {Γ : Ctx} → Formula C Γ → Set where
   axiom :
     ∀ {Γ} (i : thy-idx T)
@@ -11,11 +10,12 @@ data Proof (T : Theory) {C : Set} : {Γ : Ctx} → Formula C Γ → Set where
     (r : ren (thy-ctx T i) Γ) →
     Proof T (Subst-Formula σ (ren-Formula r (thy-axi T i)))
 
-  all-intro :
-    ∀ {Γ} {Φ : Formula C (extend Γ)} →
-    Proof T Φ →
-    ---------------
-    Proof T (all Φ)
+  -- we don't need this rule for the eliminability theorem
+  -- all-intro :
+  --   ∀ {Γ} {Φ : Formula C (extend Γ)} →
+  --   Proof T Φ →
+  --   ---------------
+  --   Proof T (all Φ)
 
   ⇔-refl : ∀ {Γ} {Φ : Formula C Γ} → Proof T (Φ ⇔ Φ)
 
@@ -51,3 +51,53 @@ data Proof (T : Theory) {C : Set} : {Γ : Ctx} → Formula C Γ → Set where
     Proof T (Φ ⇔ Φ') →
     ------------------------------
     Proof T (exists Φ ⇔ exists Φ')
+
+axiom-ren : 
+  ∀ {T Γ} (i : thy-idx T)
+  (r : ren (thy-ctx T i) Γ) →
+  -------------------------------------
+  Proof T (ren-Formula r (thy-axi T i))
+axiom-ren {T = T} i r = ≡-subst (λ Ξ → Proof T Ξ) (id-Subst-Formula) (axiom i id-Subst r)
+
+axiom-Subst :
+  ∀ {T C} (i : thy-idx T)
+  (σ : Subst (thy-ctx T i) (thy-cls T i) C) →
+  -------------------------------------------
+  Proof T (Subst-Formula σ (thy-axi T i))
+axiom-Subst {T = T} i σ = ≡-subst (λ Ξ → Proof T (Subst-Formula σ Ξ)) id-ren-Formula (axiom i σ id-ren)
+
+axiom-exact : 
+  ∀ {T} (i : thy-idx T) →
+  -----------------------
+  Proof T (thy-axi T i)
+axiom-exact {T = T} i = ≡-subst (λ Ξ → Proof T Ξ) id-ren-Formula (axiom-ren i id-ren)
+
+ren-Proof : ∀ {T C Γ Δ} {Φ : Formula C Γ} (r : ren Γ Δ) → Proof T Φ → Proof T (ren-Formula r Φ)
+ren-Proof {T = T} r (axiom i σ r') =
+  ≡-subst
+    (λ Ξ → Proof T Ξ)
+    (sym
+      (trans
+        (comp-rS-Formula {Φ = ren-Formula r' (thy-axi T i)} σ r)
+        (cong (λ Ξ → Subst-Formula (comp-rS r σ) Ξ) (ren-comp-Formula r' r))))
+    (axiom i (comp-rS r σ) (r ∘ r'))
+ren-Proof r ⇔-refl = ⇔-refl
+ren-Proof r (∧-cong p p') = ∧-cong (ren-Proof r p) (ren-Proof r p')
+ren-Proof r (⇔-cong p p') = ⇔-cong (ren-Proof r p) (ren-Proof r p')
+ren-Proof r (¬-cong p) = ¬-cong (ren-Proof r p)
+ren-Proof r (all-cong p) = all-cong (ren-Proof (extend-ren r) p)
+ren-Proof r (⇔-trans p p') = ⇔-trans (ren-Proof r p) (ren-Proof r p')
+ren-Proof r (exists-cong p) = exists-cong (ren-Proof (extend-ren r) p)
+
+-- Subst-Proof : ∀ {T C D Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) → Proof T Φ → Proof T (Subst-Formula σ Φ)
+-- Subst-Proof σ p = {!!}
+
+subst-dist-⇔ : ∀ {T C Γ} {Φ Ψ : Formula C (extend Γ)} (x : Var Γ) → Proof T (Φ ⇔ Ψ) → Proof T (Φ [ svar x ]F ⇔ Ψ [ svar x ]F)
+subst-dist-⇔ x p = ren-Proof (ren₀ x) p -- all-elim (all-intro p) ; if we can cope with having all-elim
+
+eq-to-⇔ : ∀ {Γ C T} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof T (Φ ⇔ Ψ)
+eq-to-⇔ refl = ⇔-refl
+
+⇔-∈-subst : ∀ {Γ} {Φ : Formula₀ (extend Γ)} →
+  Proof CT (svar zero ∈ (class (extend-Formula-ctx Φ)) ⇔ (extend-Formula-ctx Φ) [ svar zero ]F)
+⇔-∈-subst {Γ} {Φ} = axiom-exact (set∈class 0 (extend Γ) zero (extend-Formula-ctx Φ))
