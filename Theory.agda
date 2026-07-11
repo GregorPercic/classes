@@ -22,15 +22,15 @@ data idxCT : Set where
   -- the axiom A = B ⇔ ∀x.(x ∈ A ⇔ x ∈ B)
   class≈class : idxCT
 
-data twoClasses : Set where
-  A B : twoClasses
+data two-classes : Set where
+  A B : two-classes
 
 CT : Theory
 thy-idx CT = idxCT
 
 thy-cls CT (set∈class n Γ y Φ) = Fin-with-𝟘 n
-thy-cls CT class∈class = twoClasses
-thy-cls CT class≈class = twoClasses
+thy-cls CT class∈class = two-classes
+thy-cls CT class≈class = two-classes
 
 thy-ctx CT (set∈class n Γ y Φ) = Γ
 thy-ctx CT class∈class = ⟨⟩
@@ -51,6 +51,6 @@ thy-idx ST = idxST
 
 thy-cls ST ext = 𝟘
 
-thy-ctx ST ext = ⟨⟩
--- the axiom of extensionality: ∀x∀y.(x = y ⇔ ∀z.(z ∈ x ⇔ z ∈ y))
-thy-axi ST ext = all (all (svar (suc zero) ≈ svar zero ⇔ all (svar zero ∈ svar (suc (suc zero)) ⇔ svar zero ∈ svar (suc zero))))
+thy-ctx ST ext = 2
+-- the axiom of extensionality: x = y ⇔ ∀z.(z ∈ x ⇔ z ∈ y)
+thy-axi ST ext = svar (suc zero) ≈ svar zero ⇔ all (svar zero ∈ svar (suc (suc zero)) ⇔ svar zero ∈ svar (suc zero))
