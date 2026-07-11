@@ -277,6 +277,24 @@ renaming-suc-commute-Term {t = t} r =
       (cong (λ r' → ren-Term r' t) (renaming-suc-commute r)))
     (sym (ren-comp-Term r suc))
 
+id-Subst : ∀ {C Γ} → Subst Γ C C
+id-Subst c = cvar c
+
+mutual
+  id-Subst-Term : ∀ {C Γ} {t : Term C Γ} → Subst-Term id-Subst t ≡ t
+  id-Subst-Term {t = svar x} = refl
+  id-Subst-Term {t = cvar c} = refl
+  id-Subst-Term {t = class Φ} = cong class id-Subst-Formula
+
+  id-Subst-Formula : ∀ {C Γ} {Φ : Formula C Γ} → Subst-Formula id-Subst Φ ≡ Φ
+  id-Subst-Formula {Φ = t ≈ u} = cong₂ _≈_ id-Subst-Term id-Subst-Term
+  id-Subst-Formula {Φ = t ∈ u} = cong₂ _∈_ id-Subst-Term id-Subst-Term
+  id-Subst-Formula {Φ = Φ ∧ Ψ} = cong₂ _∧_ id-Subst-Formula id-Subst-Formula
+  id-Subst-Formula {Φ = Φ ⇔ Ψ} = cong₂ _⇔_ id-Subst-Formula id-Subst-Formula
+  id-Subst-Formula {Φ = ¬ Φ} = cong ¬_ id-Subst-Formula
+  id-Subst-Formula {Γ = Γ} {Φ = all Φ} = cong all id-Subst-Formula
+  id-Subst-Formula {Φ = exists Φ} = cong exists id-Subst-Formula
+
 record Sbs (C : Set) (Γ : Ctx) (D : Set) (Δ : Ctx) : Set where
   field
     sbs-cls : C → Term D Δ

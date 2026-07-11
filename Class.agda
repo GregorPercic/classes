@@ -132,17 +132,31 @@ elim (¬ Φ) = ¬ (elim Φ)
 elim (all Φ) = all (elim Φ)
 elim (exists Φ) = exists (elim Φ)
 
-subst-dist-⇔ : ∀ {Γ T} {Φ Ψ : Formula₀ (extend Γ)} (x : Var Γ) → Proof T (Φ ⇔ Ψ) → Proof T (Φ [ svar x ]F ⇔ Ψ [ svar x ]F)
+subst-dist-⇔ : ∀ {C Γ T} {Φ Ψ : Formula C (extend Γ)} (x : Var Γ) → Proof T (Φ ⇔ Ψ) → Proof T (Φ [ svar x ]F ⇔ Ψ [ svar x ]F)
 subst-dist-⇔ x p = ren-Proof (ren₀ x) p -- all-elim (all-intro p) ; if we can cope with having all-elim
 
 eq-to-⇔ : ∀ {Γ C T} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof T (Φ ⇔ Ψ)
 eq-to-⇔ refl = ⇔-refl
 
+axiom-ren : 
+  ∀ {T Γ} (i : thy-idx T)
+  (r : ren (thy-ctx T i) Γ) →
+  -------------------------------------
+  Proof T (ren-Formula r (thy-axi T i))
+axiom-ren {T = T} i r = ≡-subst (λ Ξ → Proof T Ξ) (id-Subst-Formula) (axiom i id-Subst r)
+
+axiom-Subst :
+  ∀ {T C} (i : thy-idx T)
+  (σ : Subst (thy-ctx T i) (thy-cls T i) C) →
+  -------------------------------------------
+  Proof T (Subst-Formula σ (thy-axi T i))
+axiom-Subst {T = T} i σ = ≡-subst (λ Ξ → Proof T (Subst-Formula σ Ξ)) id-ren-Formula (axiom i σ id-ren)
+
 axiom-unsubst : 
   ∀ {T} (i : thy-idx T) →
   -----------------------
   Proof T (thy-axi T i)
-axiom-unsubst i = {!  !}
+axiom-unsubst {T = T} i = ≡-subst (λ Ξ → Proof T Ξ) id-ren-Formula (axiom-ren i id-ren)
 
 ⇔-∈-subst : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → Proof CT (svar zero ∈ (class (extend-Formula-ctx Φ)) ⇔ (extend-Formula-ctx Φ) [ svar zero ]F)
 ⇔-∈-subst {Γ} {Φ} = axiom-unsubst (set∈class 0 (extend Γ) zero (extend-Formula-ctx Φ))
