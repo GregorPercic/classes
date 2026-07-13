@@ -10,7 +10,7 @@ open import Theory
 
 -- The Conservation Theorem 
 
-_↔_ : Set → Set → Set
+_↔_ : ∀ {ℓ} → Set ℓ → Set ℓ → Set ℓ
 ty ↔ ty' = (ty → ty') × (ty' → ty)
 
 conservation-⇒ : ∀ {C Γ} φ → Proof CT {C} {Γ} (inj-formula φ) → Proof ST {𝟘} {Γ} (inj-formula φ)

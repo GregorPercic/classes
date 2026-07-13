@@ -108,7 +108,7 @@ eliminability-main-theorem {Γ = Γ} (svar x ∈ class Φ) =
     lemma : Proof CT (svar x ∈ class Φ ⇔ (inj-formula (elim Φ)) [ svar x ]F)
     lemma =
       ⇔-trans
-        (axiom-exact (set∈class 0 Γ x Φ))
+        (axiom-exact (set∈class 𝟘 Γ x Φ))
         (subst-dist-⇔ x (eliminability-main-theorem Φ))
 eliminability-main-theorem {Γ = Γ} (class Φ ∈ svar x) = ⇔-trans lemma1 lemma12
   where

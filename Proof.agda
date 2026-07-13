@@ -3,7 +3,7 @@ open import Substitutions
 open import Theory
 
 
-data Proof (T : Theory) {C : Set} : {Γ : Ctx} → Formula C Γ → Set where
+data Proof (T : Theory) {C : Set} : {Γ : Ctx} → Formula C Γ → Set₂ where
   axiom :
     ∀ {Γ} (i : thy-idx T)
     (σ : Subst Γ (thy-cls T i) C)
@@ -56,14 +56,14 @@ axiom-ren :
   ∀ {T Γ} (i : thy-idx T)
   (r : ren (thy-ctx T i) Γ) →
   -------------------------------------
-  Proof T (ren-Formula r (thy-axi T i))
+  Proof T {C = thy-cls T i} {Γ = Γ} (ren-Formula r (thy-axi T i))
 axiom-ren {T = T} i r = ≡-subst (λ Ξ → Proof T Ξ) (id-Subst-Formula) (axiom i id-Subst r)
 
 axiom-Subst :
   ∀ {T C} (i : thy-idx T)
   (σ : Subst (thy-ctx T i) (thy-cls T i) C) →
   -------------------------------------------
-  Proof T (Subst-Formula σ (thy-axi T i))
+  Proof T {C = C} {Γ = thy-ctx T i} (Subst-Formula σ (thy-axi T i))
 axiom-Subst {T = T} i σ = ≡-subst (λ Ξ → Proof T (Subst-Formula σ Ξ)) id-ren-Formula (axiom i σ id-ren)
 
 axiom-exact : 
@@ -100,4 +100,4 @@ eq-to-⇔ refl = ⇔-refl
 
 ⇔-∈-subst : ∀ {Γ} {Φ : Formula₀ (extend Γ)} →
   Proof CT (svar zero ∈ (class (extend-Formula-ctx Φ)) ⇔ (extend-Formula-ctx Φ) [ svar zero ]F)
-⇔-∈-subst {Γ} {Φ} = axiom-exact (set∈class 0 (extend Γ) zero (extend-Formula-ctx Φ))
+⇔-∈-subst {Γ} {Φ} = axiom-exact (set∈class 𝟘 (extend Γ) zero (extend-Formula-ctx Φ))
