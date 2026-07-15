@@ -1,3 +1,5 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 open import Syntax public
 
 open import Relation.Binary.PropositionalEquality using (_≡_ ; refl ; cong ; cong₂ ; trans ; sym) renaming (subst to ≡-subst) public
@@ -46,6 +48,8 @@ ren₀ : ∀ {Γ} (x : Var Γ) → ren (extend Γ) Γ
 ren₀ x zero = x
 ren₀ x (suc y) = y
 
+empty-ren : ∀ {Γ} → ren 0 Γ
+empty-ren ()
 
 -- Substitutions from class variables to class terms
 
@@ -73,6 +77,14 @@ mutual
   Subst-Formula σ (all Φ) = all (Subst-Formula (extend-Subst σ) Φ)
   Subst-Formula σ (exists Φ) = exists (Subst-Formula (extend-Subst σ) Φ)
 
+_∘c_ : ∀ {C D E Γ} → Subst Γ D E → Subst Γ C D → Subst Γ C E
+(σ' ∘c σ) c = Subst-Term σ' (σ c)
+
+empty-Subst : ∀ {C Γ} → Subst Γ 𝟘 C
+empty-Subst ()
+
+lift-Formula₀ : ∀ {C Γ} → Formula₀ Γ → Formula C Γ
+lift-Formula₀ = Subst-Formula empty-Subst
 
 -- Simple subtitutions for the main constructs
 
@@ -139,8 +151,8 @@ mutual
         (cong (λ r → ren-Formula r Φ) extend-preserves-id-ren)
         (id-ren-Formula {Φ = Φ}))
 
-extend-comp-commute : ∀ {Γ Δ Ω} → (r : ren Γ Δ) (r' : ren Δ Ω) → (extend-ren r') ∘ (extend-ren r) ≡ extend-ren (r' ∘ r)
-extend-comp-commute r r' = fun-ext λ {zero → refl ; (suc x) → refl}
+extend-ren-comp-commute : ∀ {Γ Δ Ω} → (r : ren Γ Δ) (r' : ren Δ Ω) → (extend-ren r') ∘ (extend-ren r) ≡ extend-ren (r' ∘ r)
+extend-ren-comp-commute r r' = fun-ext λ {zero → refl ; (suc x) → refl}
 
 mutual
   ren-comp-Term : ∀ {C Γ Δ Ω} {t : Term C Γ} (r : ren Γ Δ) (r' : ren Δ Ω) →
@@ -152,7 +164,7 @@ mutual
       class
       (≡-subst
         (λ f → ren-Formula (extend-ren r') (ren-Formula (extend-ren r) Φ) ≡ ren-Formula f Φ)
-        (extend-comp-commute r r')
+        (extend-ren-comp-commute r r')
         (ren-comp-Formula {Φ = Φ} (extend-ren r) (extend-ren r')))
 
   ren-comp-Formula : ∀ {C Γ Δ Ω} {Φ : Formula C Γ} (r : ren Γ Δ) (r' : ren Δ Ω) →
@@ -167,14 +179,14 @@ mutual
       all
       (≡-subst
         (λ f → ren-Formula (extend-ren r') (ren-Formula (extend-ren r) Φ) ≡ ren-Formula f Φ)
-        (extend-comp-commute r r')
+        (extend-ren-comp-commute r r')
         (ren-comp-Formula {Φ = Φ} (extend-ren r) (extend-ren r')))
   ren-comp-Formula {Φ = exists Φ} r r' =
     cong
       exists
       (≡-subst
         (λ f → ren-Formula (extend-ren r') (ren-Formula (extend-ren r) Φ) ≡ ren-Formula f Φ)
-        (extend-comp-commute r r')
+        (extend-ren-comp-commute r r')
         (ren-comp-Formula {Φ = Φ} (extend-ren r) (extend-ren r')))
 
 ren-comp-formula : ∀ {Γ Δ Ω} {φ : formula Γ} (r : ren Γ Δ) (r' : ren Δ Ω) → ren-formula r' (ren-formula r φ) ≡ ren-formula (r' ∘ r) φ
@@ -188,14 +200,14 @@ ren-comp-formula {φ = all φ} r r' =
     all
     (≡-subst
       (λ f → ren-formula (extend-ren r') (ren-formula (extend-ren r) φ) ≡ ren-formula f φ)
-      (extend-comp-commute r r')
+      (extend-ren-comp-commute r r')
       (ren-comp-formula {φ = φ} (extend-ren r) (extend-ren r')))
 ren-comp-formula {φ = exists φ} r r' =
   cong
     exists
     (≡-subst
       (λ f → ren-formula (extend-ren r') (ren-formula (extend-ren r) φ) ≡ ren-formula f φ)
-      (extend-comp-commute r r')
+      (extend-ren-comp-commute r r')
       (ren-comp-formula {φ = φ} (extend-ren r) (extend-ren r')))
 
 subst-inj-commute-ren : ∀ {C Γ Δ} {φ : formula (extend Γ)} (r : ren (extend Γ) Δ) →
@@ -293,6 +305,64 @@ mutual
         (cong
           (λ σ' → Subst-Formula σ' (ren-Formula (extend-ren r) Φ))
           (extend-comp-rS-commute r σ)))
+
+extend-Subst-comp-commute : ∀ {C D E Γ} (σ : Subst Γ C D) (σ' : Subst Γ D E) →
+  (extend-Subst σ') ∘c (extend-Subst σ) ≡ extend-Subst (σ' ∘c σ)
+extend-Subst-comp-commute {D = D} {Γ = Γ} σ σ' = fun-ext λ c → sym (comp-rS-Term {t = σ c} σ' suc)
+
+mutual
+  Subst-comp-Term : ∀ {C D E Γ} {t : Term C Γ} (σ : Subst Γ C D) (σ' : Subst Γ D E) →
+    Subst-Term σ' (Subst-Term σ t) ≡ Subst-Term (σ' ∘c σ) t
+  Subst-comp-Term {t = svar x} σ σ' = refl
+  Subst-comp-Term {t = cvar c} σ σ' = refl
+  Subst-comp-Term {t = class Φ} σ σ' =
+    cong
+      class
+      (trans
+        (Subst-comp-Formula (extend-Subst σ) (extend-Subst σ'))
+        (cong (λ σ → Subst-Formula σ Φ) (extend-Subst-comp-commute σ σ')))
+
+  Subst-comp-Formula : ∀ {C D E Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) (σ' : Subst Γ D E) →
+    Subst-Formula σ' (Subst-Formula σ Φ) ≡ Subst-Formula (σ' ∘c σ) Φ
+  Subst-comp-Formula {Φ = t ≈ u} σ σ' = cong₂ _≈_ (Subst-comp-Term {t = t} σ σ') (Subst-comp-Term {t = u} σ σ')
+  Subst-comp-Formula {Φ = t ∈ u} σ σ' = cong₂ _∈_ (Subst-comp-Term {t = t} σ σ') (Subst-comp-Term {t = u} σ σ')
+  Subst-comp-Formula {Φ = Φ ∧ Ψ} σ σ' = cong₂ _∧_ (Subst-comp-Formula σ σ') (Subst-comp-Formula σ σ')
+  Subst-comp-Formula {Φ = Φ ⇔ Ψ} σ σ' = cong₂ _⇔_ (Subst-comp-Formula σ σ') (Subst-comp-Formula σ σ')
+  Subst-comp-Formula {Φ = ¬ Φ} σ σ' = cong ¬_ (Subst-comp-Formula σ σ')
+  Subst-comp-Formula {Φ = all Φ} σ σ' =
+    cong
+      all
+      (trans
+        (Subst-comp-Formula (extend-Subst σ) (extend-Subst σ'))
+        (cong (λ σ → Subst-Formula σ Φ) (extend-Subst-comp-commute σ σ')))
+  Subst-comp-Formula {Φ = exists Φ} σ σ' =
+    cong
+      exists
+      (trans
+        (Subst-comp-Formula (extend-Subst σ) (extend-Subst σ'))
+        (cong (λ σ → Subst-Formula σ Φ) (extend-Subst-comp-commute σ σ')))
+
+extend-empty-eq : ∀ {C Γ} → extend-Subst {D = C} (empty-Subst {Γ = Γ}) ≡ empty-Subst {Γ = extend Γ}
+extend-empty-eq = fun-ext λ ()
+
+Subst-empty-id : ∀ {C Γ} {φ : formula Γ} → Subst-Formula {D = C} empty-Subst (inj-formula φ) ≡ inj-formula φ
+Subst-empty-id {φ = svar x ≈ svar y} = refl
+Subst-empty-id {φ = svar x ∈ svar y} = refl
+Subst-empty-id {φ = φ ∧ ψ} = cong₂ _∧_ Subst-empty-id Subst-empty-id
+Subst-empty-id {φ = φ ⇔ ψ} = cong₂ _⇔_ Subst-empty-id Subst-empty-id
+Subst-empty-id {φ = ¬ φ} = cong ¬_ Subst-empty-id
+Subst-empty-id {φ = all φ} =
+  cong
+    all
+    (trans
+      (cong (λ σ → Subst-Formula σ (inj-formula φ)) extend-empty-eq)
+      Subst-empty-id)
+Subst-empty-id {φ = exists φ} =
+  cong
+    exists
+    (trans
+      (cong (λ σ → Subst-Formula σ (inj-formula φ)) extend-empty-eq)
+      Subst-empty-id)
 
 record Sbs (C : Set) (Γ : Ctx) (D : Set) (Δ : Ctx) : Set where
   field

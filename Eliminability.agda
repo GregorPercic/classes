@@ -19,7 +19,7 @@ eliminability-main-theorem {Γ = Γ} (svar x ≈ class Φ) = ⇔-trans lemma1 le
     Φ+ = extend-Formula-ctx Φ
 
     lemma1 : Proof CT (svar x ≈ class Φ ⇔ all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ class Φ+))
-    lemma1 = axiom class≈class Subst-AB (λ ()) -- hack
+    lemma1 = axiom class≈class Subst-AB empty-ren
 
     lemma2 : Proof CT ((svar zero ∈ svar (suc x) ⇔ svar zero ∈ class Φ+) ⇔ (svar zero ∈ svar (suc x) ⇔ Φ+ [ svar zero ]F))
     lemma2 = ⇔-cong ⇔-refl ⇔-∈-subst
@@ -48,7 +48,7 @@ eliminability-main-theorem {Γ = Γ} (class Φ ≈ svar x) = ⇔-trans lemma1 le
     Φ+ = extend-Formula-ctx Φ
 
     lemma1 : Proof CT (class Φ ≈ svar x ⇔ all (svar zero ∈ class Φ+ ⇔ svar zero ∈ svar (suc x)))
-    lemma1 = axiom class≈class Subst-AB (λ ()) -- hack
+    lemma1 = axiom class≈class Subst-AB empty-ren
 
     lemma2 : Proof CT ((svar zero ∈ class Φ+ ⇔ svar zero ∈ svar (suc x)) ⇔ (Φ+ [ svar zero ]F ⇔ svar zero ∈ svar (suc x)))
     lemma2 = ⇔-cong ⇔-∈-subst ⇔-refl
@@ -80,7 +80,7 @@ eliminability-main-theorem {Γ = Γ} (class Φ ≈ class Ψ) = ⇔-trans lemma1 
     Ψ+ = extend-Formula-ctx Ψ
 
     lemma1 : Proof CT (class Φ ≈ class Ψ ⇔ all (svar zero ∈ class Φ+ ⇔ svar zero ∈ class Ψ+))
-    lemma1 = axiom class≈class Subst-AB (λ ()) -- hack
+    lemma1 = axiom class≈class Subst-AB empty-ren
 
     lemma2 : Proof CT ((svar zero ∈ class Φ+ ⇔ svar zero ∈ class Ψ+) ⇔ (Φ+ [ svar zero ]F ⇔ Ψ+ [ svar zero ]F))
     lemma2 = ⇔-cong ⇔-∈-subst ⇔-∈-subst
@@ -123,10 +123,10 @@ eliminability-main-theorem {Γ = Γ} (class Φ ∈ svar x) = ⇔-trans lemma1 le
     Φ++ = extend-Formula-ctx Φ+
 
     lemma1 : Proof CT (class Φ ∈ svar x ⇔ exists (svar zero ≈ class Φ+ ∧ svar zero ∈ svar (suc x)))
-    lemma1 = axiom class∈class Subst-AB (λ ())
+    lemma1 = axiom class∈class Subst-AB empty-ren
 
     lemma2 : Proof CT (svar zero ≈ class Φ+ ⇔ all (svar zero ∈ svar (suc zero) ⇔ svar zero ∈ class Φ++))
-    lemma2 = axiom class≈class (λ {A → svar zero ; B → class Φ+}) (λ ())
+    lemma2 = axiom class≈class (λ {A → svar zero ; B → class Φ+}) empty-ren
 
     lemma3 : Proof CT ((svar zero ∈ class Φ++) ⇔ Φ++ [ svar zero ]F)
     lemma3 = ⇔-∈-subst
@@ -200,10 +200,10 @@ eliminability-main-theorem {Γ = Γ} (class Φ ∈ class Ψ) = ⇔-trans lemma1 
     Ψ+ = extend-Formula-ctx Ψ
 
     lemma1 : Proof CT (class Φ ∈ class Ψ ⇔ exists (svar zero ≈ class Φ+ ∧ svar zero ∈ class Ψ+))
-    lemma1 = axiom class∈class Subst-AB (λ ())
+    lemma1 = axiom class∈class Subst-AB empty-ren
 
     lemma2 : Proof CT (svar zero ≈ class Φ+ ⇔ all (svar zero ∈ svar (suc zero) ⇔ svar zero ∈ class Φ++))
-    lemma2 = axiom class≈class (λ {A → svar zero ; B → class Φ+}) (λ ())
+    lemma2 = axiom class≈class (λ {A → svar zero ; B → class Φ+}) empty-ren
 
     lemma3 : Proof CT ((svar zero ∈ class Φ++) ⇔ Φ++ [ svar zero ]F)
     lemma3 = ⇔-∈-subst

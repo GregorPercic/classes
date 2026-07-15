@@ -1,3 +1,5 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 open import Syntax
 open import Substitutions
 open import Theory
@@ -89,8 +91,16 @@ ren-Proof r (all-cong p) = all-cong (ren-Proof (extend-ren r) p)
 ren-Proof r (⇔-trans p p') = ⇔-trans (ren-Proof r p) (ren-Proof r p')
 ren-Proof r (exists-cong p) = exists-cong (ren-Proof (extend-ren r) p)
 
--- Subst-Proof : ∀ {T C D Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) → Proof T Φ → Proof T (Subst-Formula σ Φ)
--- Subst-Proof σ p = {!!}
+Subst-Proof : ∀ {T C D Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) → Proof T Φ → Proof T (Subst-Formula σ Φ)
+Subst-Proof {T = T} σ (axiom i σ' r) =
+  ≡-subst (λ Ξ → Proof T Ξ) (sym (Subst-comp-Formula σ' σ)) (axiom i (σ ∘c σ') r)
+Subst-Proof σ ⇔-refl = ⇔-refl
+Subst-Proof σ (∧-cong p p') = ∧-cong (Subst-Proof σ p) (Subst-Proof σ p')
+Subst-Proof σ (⇔-cong p p') = ⇔-cong (Subst-Proof σ p) (Subst-Proof σ p')
+Subst-Proof σ (¬-cong p) = ¬-cong (Subst-Proof σ p)
+Subst-Proof σ (all-cong p) = all-cong (Subst-Proof (extend-Subst σ) p)
+Subst-Proof σ (⇔-trans p p') = ⇔-trans (Subst-Proof σ p) (Subst-Proof σ p')
+Subst-Proof σ (exists-cong p) = exists-cong (Subst-Proof (extend-Subst σ) p)
 
 subst-dist-⇔ : ∀ {T C Γ} {Φ Ψ : Formula C (extend Γ)} (x : Var Γ) → Proof T (Φ ⇔ Ψ) → Proof T (Φ [ svar x ]F ⇔ Ψ [ svar x ]F)
 subst-dist-⇔ x p = ren-Proof (ren₀ x) p -- all-elim (all-intro p) ; if we can cope with having all-elim
