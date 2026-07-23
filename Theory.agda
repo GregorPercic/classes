@@ -45,12 +45,17 @@ thy-axi CT class≈class = cvar A ≈ cvar B ⇔ all (svar zero ∈ cvar A ⇔ s
 
 data idxST : Set₁ where
   ext : (Γ : Ctx) (x : Var Γ) (y : Var Γ) → idxST
+  in-equiv : (Γ : Ctx) (x : Var Γ) (y : Var Γ) → idxST
 
 ST : Theory
 thy-idx ST = idxST
 
 thy-cls ST (ext _ _ _) = 𝟘
+thy-cls ST (in-equiv _ _ _) = 𝟘
 
 thy-ctx ST (ext Γ _ _) = Γ
+thy-ctx ST (in-equiv Γ _ _) = Γ
+
 -- the axiom of extensionality: x = y ⇔ ∀z.(z ∈ x ⇔ z ∈ y)
 thy-axi ST (ext Γ x y) = svar x ≈ svar y ⇔ all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ svar (suc y))
+thy-axi ST (in-equiv Γ x y) = svar x ∈ svar y ⇔ exists (svar zero ≈ svar (suc x) ∧ svar zero ∈ svar (suc y))

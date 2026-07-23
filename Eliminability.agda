@@ -4,7 +4,7 @@ open import Syntax
 open import Substitutions
 open import Theory
 open import Proof
-open import Eliminability-Lemmas
+open import Eliminability-Lemmas public
 
 
 eliminability-main-theorem : ∀ {Γ} (Φ : Formula₀ Γ) → Proof CT (Φ ⇔ (inj-formula (elim Φ)))
