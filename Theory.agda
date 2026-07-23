@@ -44,13 +44,13 @@ thy-axi CT class≈class = cvar A ≈ cvar B ⇔ all (svar zero ∈ cvar A ⇔ s
 -- The basic first-order set theory with Extensionality as its only axiom
 
 data idxST : Set₁ where
-  ext : idxST
+  ext : (Γ : Ctx) (x : Var Γ) (y : Var Γ) → idxST
 
 ST : Theory
 thy-idx ST = idxST
 
-thy-cls ST ext = 𝟘
+thy-cls ST (ext _ _ _) = 𝟘
 
-thy-ctx ST ext = 2
+thy-ctx ST (ext Γ _ _) = Γ
 -- the axiom of extensionality: x = y ⇔ ∀z.(z ∈ x ⇔ z ∈ y)
-thy-axi ST ext = svar (suc zero) ≈ svar zero ⇔ all (svar zero ∈ svar (suc (suc zero)) ⇔ svar zero ∈ svar (suc zero))
+thy-axi ST (ext Γ x y) = svar x ≈ svar y ⇔ all (svar zero ∈ svar (suc x) ⇔ svar zero ∈ svar (suc y))

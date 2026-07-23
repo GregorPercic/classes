@@ -1,8 +1,7 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 open import Syntax public
 
-open import Relation.Binary.PropositionalEquality using (_≡_ ; refl ; cong ; cong₂ ; trans ; sym) renaming (subst to ≡-subst) public
+open import Relation.Binary.PropositionalEquality using
+  (_≡_ ; refl ; cong ; cong₂ ; trans ; sym) renaming (subst to ≡-subst ; subst₂ to ≡-subst₂) public
 open import Function.Base using (_∘_) public
 
 
@@ -48,7 +47,7 @@ ren₀ : ∀ {Γ} (x : Var Γ) → ren (extend Γ) Γ
 ren₀ x zero = x
 ren₀ x (suc y) = y
 
-empty-ren : ∀ {Γ} → ren 0 Γ
+empty-ren : ∀ {Γ} → ren ⟨⟩ Γ
 empty-ren ()
 
 -- Substitutions from class variables to class terms
