@@ -172,11 +172,63 @@ subst-extend-elim-eq {Φ = Φ} =
       (cong elim (ren-comp-Formula {Φ = Φ} (extend-ren suc) (ren₀ zero)))
       (trans
         (cong (λ r → elim (ren-Formula r Φ)) ren-zero-extend-ctx-id)
-        (cong (λ Ξ → elim Ξ) (id-ren-Formula {Φ = Φ}))))
+        (cong elim (id-ren-Formula {Φ = Φ}))))
+
+ren₀-suc-eq-Term : ∀ {C Γ} {x : Var Γ} {t : Term C Γ} → ren-Term (ren₀ x) (ren-Term suc t) ≡ t
+ren₀-suc-eq-Term {x = x} {t = t} =
+  trans
+    (ren-comp-Term suc (ren₀ x))
+    (trans
+      (cong (λ r' → ren-Term r' t) (lemma {x = x}))
+      id-ren-Term)
+  where
+    lemma : ∀ {Γ} {x : Var Γ} → (ren₀ x) ∘ suc ≡ id-ren
+    lemma = fun-ext (λ {zero → refl ; (suc y) → refl})
+
+ren₀-extend-Subst-is-Subst-Formula : ∀ {C D Γ} {x : Var Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) →
+  Subst-Formula (comp-rS (ren₀ x) (extend-Subst σ)) Φ ≡ Subst-Formula σ Φ
+ren₀-extend-Subst-is-Subst-Formula {Φ = Φ} σ = cong (λ σ' → Subst-Formula σ' Φ) (lemma σ)
+  where
+    lemma : ∀ {C D Γ} {x : Var Γ} (σ : Subst Γ C D) → comp-rS (ren₀ x) (extend-Subst σ) ≡ σ
+    lemma σ = fun-ext λ c → ren₀-suc-eq-Term
+
+ren₀-under-extend-Subst-Formula : ∀ {C D Γ} {x : Var Γ} {Φ : Formula C (extend Γ)} (σ : Subst Γ C D) →
+  ren-Formula (ren₀ x) (Subst-Formula (extend-Subst σ) Φ) ≡ Subst-Formula σ (ren-Formula (ren₀ x) Φ)
+ren₀-under-extend-Subst-Formula {x = x} σ =
+  trans
+    (comp-rS-Formula (extend-Subst σ) (ren₀ x))
+    (ren₀-extend-Subst-is-Subst-Formula σ)
+
+ren₀-under-extend-comp-eq : ∀ {Γ Δ} {x : Var Γ} (r : ren Γ Δ) → (ren₀ (r x)) ∘ (extend-ren r) ≡ r ∘ (ren₀ x)
+ren₀-under-extend-comp-eq r = fun-ext λ {zero → refl ; (suc x) → refl}
+
+ren₀-under-extend-ren : ∀ {C Γ Δ} {x : Var Γ} {Φ : Formula C (extend Γ)} (r : ren Γ Δ) →
+  ren-Formula (ren₀ (r x)) (ren-Formula (extend-ren r) Φ) ≡ ren-Formula r (ren-Formula (ren₀ x) Φ)
+ren₀-under-extend-ren {x = x} {Φ = Φ} r =
+  trans
+    (ren-comp-Formula (extend-ren r) (ren₀ (r x)))
+    (trans
+      (cong (λ r' → ren-Formula r' Φ) (ren₀-under-extend-comp-eq r))
+      (sym (ren-comp-Formula (ren₀ x) r)))
 
 Lemma'' : ∀ {Γ} {Φ : Formula₀ Γ} → Proof CT {𝟘} {Γ} Φ → Proof ST {𝟘} {Γ} (inj-formula (elim Φ))
-Lemma'' (axiom (set∈class C Γ y Ψ) σ r) =
-  eq-to-⇔ (cong inj-formula {!   !})
+Lemma'' {Φ = Φ} (axiom (set∈class C Γ y Ψ) σ r) =
+  eq-to-⇔
+    (cong
+      inj-formula
+      (trans
+        (sym (elim-renamings-commute {Φ = Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Ψ)} (ren₀ (r y))))
+        (cong
+          elim
+          (trans
+            (ren₀-under-extend-Subst-Formula {Φ = ren-Formula (extend-ren r) Ψ} σ)
+            (cong
+              (λ Ξ → Subst-Formula σ Ξ)
+              (ren₀-under-extend-ren r))))))
+-- elim
+--       (ren-Formula (ren₀ (r y))
+--        (Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Ψ)))
+--       ≡ elim (Subst-Formula σ (ren-Formula r (ren-Formula (ren₀ y) Ψ)))
 Lemma'' (axiom class∈class σ r) with σ A | σ B 
 ... | svar x  | svar y = axiom-exact (in-equiv _ x y)
 ... | svar x  | class Φ = {!   !}
