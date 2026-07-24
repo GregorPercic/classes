@@ -150,6 +150,25 @@ mutual
         (cong (λ r → ren-Formula r Φ) extend-preserves-id-ren)
         (id-ren-Formula {Φ = Φ}))
 
+id-ren-formula : ∀ {Γ} {φ : formula Γ} → ren-formula id-ren φ ≡ φ
+id-ren-formula {φ = svar x ≈ svar y} = refl
+id-ren-formula {φ = svar x ∈ svar y} = refl
+id-ren-formula {φ = φ ∧ ψ} = cong₂ _∧_ id-ren-formula id-ren-formula
+id-ren-formula {φ = φ ⇔ ψ} = cong₂ _⇔_ id-ren-formula id-ren-formula
+id-ren-formula {φ = ¬ φ} = cong ¬_ id-ren-formula
+id-ren-formula {φ = all φ} =
+  cong
+    all
+    (trans
+      (cong (λ r → ren-formula r φ) extend-preserves-id-ren)
+      (id-ren-formula {φ = φ}))
+id-ren-formula {φ = exists φ} =
+  cong
+    exists
+    (trans
+      (cong (λ r → ren-formula r φ) extend-preserves-id-ren)
+      (id-ren-formula {φ = φ}))
+
 extend-ren-comp-commute : ∀ {Γ Δ Ω} → (r : ren Γ Δ) (r' : ren Δ Ω) → (extend-ren r') ∘ (extend-ren r) ≡ extend-ren (r' ∘ r)
 extend-ren-comp-commute r r' = fun-ext λ {zero → refl ; (suc x) → refl}
 
@@ -225,6 +244,14 @@ subst-inj-commute-ren-zero {x = x} = subst-inj-commute-ren (ren₀ x)
 
 ren-zero-extend-ctx-id : ∀ {Γ} → (ren₀ {Γ = extend Γ} zero) ∘ (extend-ren suc) ≡ id-ren
 ren-zero-extend-ctx-id = fun-ext λ {zero → refl ; (suc x) → refl}
+
+ren-zero-extend-ctx-id-formula : ∀ {Γ} {φ : formula (extend Γ)} → ren-formula (ren₀ zero) (ren-formula (extend-ren suc) φ) ≡ φ
+ren-zero-extend-ctx-id-formula {φ = φ} =
+  trans
+    (ren-comp-formula (extend-ren suc) (ren₀ zero))
+    (trans
+      (cong (λ r' → ren-formula r' φ) ren-zero-extend-ctx-id)
+      id-ren-formula)
 
 extend-suc-lemma : ∀ {Γ Δ} (r : ren Γ Δ) → (extend-ren suc) ∘ (extend-ren r) ≡ (extend-ren (extend-ren r)) ∘ (extend-ren suc)
 extend-suc-lemma r = fun-ext λ {zero → refl ; (suc x) → refl}

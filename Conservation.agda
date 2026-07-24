@@ -6,6 +6,8 @@ open import Proof
 open import Theory
 open import Eliminability
 
+open import Agda.Primitive
+
 
 _↔_ : ∀ {ℓ} → Set ℓ → Set ℓ → Set ℓ
 ty ↔ ty' = (ty → ty') × (ty' → ty)
@@ -68,6 +70,7 @@ conservation-⇐-lemma (¬-cong p) = ¬-cong (conservation-⇐-lemma p)
 conservation-⇐-lemma (all-cong p) = all-cong (conservation-⇐-lemma p)
 conservation-⇐-lemma (⇔-trans p p') = ⇔-trans (conservation-⇐-lemma p) (conservation-⇐-lemma p')
 conservation-⇐-lemma (exists-cong p) = exists-cong (conservation-⇐-lemma p)
+conservation-⇐-lemma (axiom (tmp C Γ x Φ) σ r) = axiom (tmp C Γ x Φ) σ r
 
 conservation-⇐ : ∀ {C Γ} (φ : formula Γ) → Proof ST {𝟘} {Γ} (inj-formula φ) → Proof CT {C} {Γ} (inj-formula φ)
 conservation-⇐ φ p =
@@ -211,6 +214,24 @@ ren₀-under-extend-ren {x = x} {Φ = Φ} r =
       (cong (λ r' → ren-Formula r' Φ) (ren₀-under-extend-comp-eq r))
       (sym (ren-comp-Formula (ren₀ x) r)))
 
+weird-eq : ∀ {C : Set} {Γ} {x : Var Γ} {Φ : Formula₀ (extend Γ)} →
+  _≡_ {a = lzero} {A = Formula C Γ}
+    (inj-formula (ren-formula (ren₀ x) (elim Φ))
+      ⇔
+    exists (svar zero ≈ svar (suc x) ∧ inj-formula (ren-formula (ren₀ zero) (elim (ren-Formula (extend-ren suc) Φ)))))
+    (ren-Formula (ren₀ x) (inj-formula (elim Φ))
+      ⇔
+    exists (svar zero ≈ svar (suc x) ∧ inj-formula (elim Φ)))
+weird-eq {x = x} {Φ = Φ} =
+  cong₂
+    (λ Ξ Ξ' → Ξ ⇔ exists (svar zero ≈ svar (suc x) ∧ Ξ'))
+    (sym (subst-inj-commute-ren (ren₀ x)))
+    (cong
+      inj-formula
+      (trans
+        (cong (λ φ → ren-formula (ren₀ zero) φ) (elim-extend-commute {Φ = Φ}))
+        ren-zero-extend-ctx-id-formula))
+
 Lemma'' : ∀ {Γ} {Φ : Formula₀ Γ} → Proof CT {𝟘} {Γ} Φ → Proof ST {𝟘} {Γ} (inj-formula (elim Φ))
 Lemma'' {Φ = Φ} (axiom (set∈class C Γ y Ψ) σ r) =
   eq-to-⇔
@@ -225,13 +246,12 @@ Lemma'' {Φ = Φ} (axiom (set∈class C Γ y Ψ) σ r) =
             (cong
               (λ Ξ → Subst-Formula σ Ξ)
               (ren₀-under-extend-ren r))))))
--- elim
---       (ren-Formula (ren₀ (r y))
---        (Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Ψ)))
---       ≡ elim (Subst-Formula σ (ren-Formula r (ren-Formula (ren₀ y) Ψ)))
-Lemma'' (axiom class∈class σ r) with σ A | σ B 
-... | svar x  | svar y = axiom-exact (in-equiv _ x y)
-... | svar x  | class Φ = {!   !}
+Lemma'' {Γ = Γ} (axiom class∈class σ r) with σ A | σ B 
+Lemma'' {Γ = suc Γ} (axiom class∈class σ r) | svar x | svar y = axiom-exact (tmp _ _ x (svar zero ∈ svar (suc y)))
+... | svar x  | class Φ =
+  transport-proof
+    (sym (weird-eq {Φ = Φ}))
+    (axiom-exact (tmp _ _ x (inj-formula (elim Φ))))
 ... | class Φ | svar x =
   eq-to-⇔
     (cong
@@ -274,6 +294,7 @@ Lemma'' (¬-cong p) = ¬-cong (Lemma'' p)
 Lemma'' (all-cong p) = all-cong (Lemma'' p)
 Lemma'' (⇔-trans p p') = ⇔-trans (Lemma'' p) (Lemma'' p')
 Lemma'' (exists-cong p) = exists-cong (Lemma'' p)
+Lemma'' (axiom (tmp C Γ x Φ) σ r) = {!  !}
 
 conservation-⇒'' : ∀ {C Γ} (φ : formula Γ) → Proof CT {C} {Γ} (inj-formula φ) → Proof ST {𝟘} {Γ} (inj-formula φ)
 conservation-⇒'' φ p =
