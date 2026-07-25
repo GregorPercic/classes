@@ -294,7 +294,50 @@ Lemma'' (¬-cong p) = ¬-cong (Lemma'' p)
 Lemma'' (all-cong p) = all-cong (Lemma'' p)
 Lemma'' (⇔-trans p p') = ⇔-trans (Lemma'' p) (Lemma'' p')
 Lemma'' (exists-cong p) = exists-cong (Lemma'' p)
-Lemma'' (axiom (tmp C Γ x Φ) σ r) = {!  !}
+Lemma'' (axiom (tmp C Γ x Φ) σ r) =
+  transport-proof
+    (sym weird-eq-tmp)
+    (axiom-exact (tmp _ _ (r x) _))
+  where
+    weird-eq-tmp :
+      _≡_ {a = lzero} {A = Formula₀ _}
+        (inj-formula (elim (Subst-Formula σ (ren-Formula r (ren-Formula (ren₀ x) Φ))))
+          ⇔
+        exists (svar zero ≈ svar (suc (r x)) ∧
+        inj-formula (elim (Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Φ)))))
+        
+        (ren-Formula (ren₀ (r x)) (inj-formula (elim (Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Φ))))
+          ⇔
+        exists (svar zero ≈ svar (suc (r x)) ∧
+        inj-formula (elim (Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Φ)))))
+    weird-eq-tmp =
+      cong
+        (λ Ξ → Ξ ⇔ exists (svar zero ≈ svar (suc (r x)) ∧ inj-formula (elim (Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Φ)))))
+        (sym
+          (trans
+            (subst-inj-commute-ren (ren₀ (r x)))
+            (trans
+              (cong
+                (λ φ → inj-formula φ)
+                (sym
+                  (elim-renamings-commute
+                    {Φ = Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Φ)}
+                    (ren₀ (r x)))))
+              (cong
+                (λ Ξ → inj-formula (elim Ξ))
+                lemma))))
+                  where
+                    lemma :
+                      ren-Formula (ren₀ (r x)) (Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Φ))
+                        ≡
+                      Subst-Formula σ (ren-Formula r (ren-Formula (ren₀ x) Φ))
+                    lemma =
+                      trans
+                        (ren₀-under-extend-Subst-Formula σ)
+                        (cong
+                          (λ Ξ → Subst-Formula σ Ξ)
+                          (ren₀-under-extend-ren r))
+
 
 conservation-⇒'' : ∀ {C Γ} (φ : formula Γ) → Proof CT {C} {Γ} (inj-formula φ) → Proof ST {𝟘} {Γ} (inj-formula φ)
 conservation-⇒'' φ p =
