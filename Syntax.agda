@@ -19,7 +19,8 @@ infix 10 _≈_
 infix 10 _∈_
 infix  6 ¬_
 infixl 5 _∧_
-infix 4 _⇔_
+infixr 4 _⇒_
+infix 3 _⇔_
 
 data term (Γ : Ctx) : Set where
   svar : Var Γ → term Γ
@@ -28,6 +29,7 @@ data formula (Γ : Ctx) : Set where
   _≈_ : term Γ → term Γ → formula Γ
   _∈_ : term Γ → term Γ → formula Γ
   _∧_ : formula Γ → formula Γ → formula Γ
+  _⇒_ : formula Γ → formula Γ → formula Γ
   _⇔_ : formula Γ → formula Γ → formula Γ
   ¬_ : formula Γ → formula Γ
   all : formula (extend Γ) → formula Γ
@@ -43,6 +45,7 @@ mutual
     _≈_ : Term C Γ → Term C Γ → Formula C Γ
     _∈_ : Term C Γ → Term C Γ → Formula C Γ
     _∧_ : Formula C Γ → Formula C Γ → Formula C Γ
+    _⇒_ : Formula C Γ → Formula C Γ → Formula C Γ
     _⇔_ : Formula C Γ → Formula C Γ → Formula C Γ
     ¬_ : Formula C Γ → Formula C Γ
     all : Formula C (extend Γ) → Formula C Γ
@@ -61,6 +64,7 @@ inj-formula : ∀ {Γ C} → formula Γ → Formula C Γ
 inj-formula (t ≈ u) = (inj-term t) ≈ (inj-term u)
 inj-formula (t ∈ u) = (inj-term t) ∈ (inj-term u)
 inj-formula (φ ∧ ψ) = (inj-formula φ) ∧ (inj-formula ψ)
+inj-formula (φ ⇒ ψ) = (inj-formula φ) ⇒ (inj-formula ψ)
 inj-formula (φ ⇔ ψ) = (inj-formula φ) ⇔ (inj-formula ψ)
 inj-formula (¬ φ) = ¬ inj-formula φ
 inj-formula (all φ) = all (inj-formula φ)
