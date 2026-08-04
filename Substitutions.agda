@@ -18,12 +18,12 @@ ren-term : ∀ {Γ Δ} → ren Γ Δ → term Γ → term Δ
 ren-term ρ (svar x) = svar (ρ x)
 
 ren-formula : ∀ {Γ Δ} → ren Γ Δ → formula Γ → formula Δ
+ren-formula r ⊥ = ⊥
 ren-formula r (t ≈ u) = ren-term r t ≈ ren-term r u
 ren-formula r (t ∈ u) = ren-term r t ∈ ren-term r u
 ren-formula r (φ ∧ ψ) = ren-formula r φ ∧ ren-formula r ψ
 ren-formula r (φ ⇒ ψ) = ren-formula r φ ⇒ ren-formula r ψ
 ren-formula r (φ ⇔ ψ) = ren-formula r φ ⇔ ren-formula r ψ
-ren-formula r (¬ φ) = ¬ (ren-formula r φ)
 ren-formula r (all φ) = all (ren-formula (extend-ren r) φ)
 ren-formula r (exists φ) = exists (ren-formula (extend-ren r) φ)
 
@@ -34,12 +34,12 @@ mutual
   ren-Term r (class Φ) = class (ren-Formula (extend-ren r) Φ)
 
   ren-Formula : ∀ {C Γ Δ} → ren Γ Δ → Formula C Γ → Formula C Δ
+  ren-Formula r ⊥ = ⊥
   ren-Formula r (t ≈ u) = ren-Term r t ≈ ren-Term r u
   ren-Formula r (t ∈ u) = ren-Term r t ∈ ren-Term r u
   ren-Formula r (Φ ∧ Ψ) = ren-Formula r Φ ∧ ren-Formula r Ψ
   ren-Formula r (Φ ⇒ Ψ) = ren-Formula r Φ ⇒ ren-Formula r Ψ
   ren-Formula r (Φ ⇔ Ψ) = ren-Formula r Φ ⇔ ren-Formula r Ψ
-  ren-Formula r (¬ Φ) = ¬ (ren-Formula r Φ)
   ren-Formula r (all Φ) = all (ren-Formula (extend-ren r) Φ)
   ren-Formula r (exists Φ) = exists (ren-Formula (extend-ren r) Φ)
 
@@ -70,12 +70,12 @@ mutual
   Subst-Term σ (class Φ) = class (Subst-Formula (extend-Subst σ) Φ)
 
   Subst-Formula : ∀ {C D Γ} → Subst Γ C D → Formula C Γ → Formula D Γ
+  Subst-Formula σ ⊥ = ⊥
   Subst-Formula σ (t ≈ u) = (Subst-Term σ t) ≈ (Subst-Term σ u)
   Subst-Formula σ (t ∈ u) = (Subst-Term σ t) ∈ (Subst-Term σ u)
   Subst-Formula σ (Φ ∧ Ψ) = (Subst-Formula σ Φ) ∧ (Subst-Formula σ Ψ)
   Subst-Formula σ (Φ ⇒ Ψ) = (Subst-Formula σ Φ) ⇒ (Subst-Formula σ Ψ)
   Subst-Formula σ (Φ ⇔ Ψ) = (Subst-Formula σ Φ) ⇔ (Subst-Formula σ Ψ)
-  Subst-Formula σ (¬ Φ) = ¬ (Subst-Formula σ Φ)
   Subst-Formula σ (all Φ) = all (Subst-Formula (extend-Subst σ) Φ)
   Subst-Formula σ (exists Φ) = exists (Subst-Formula (extend-Subst σ) Φ)
 
@@ -135,12 +135,12 @@ mutual
         (id-ren-Formula {Φ = Φ}))
 
   id-ren-Formula : ∀ {C Γ} {Φ : Formula C Γ} → (ren-Formula id-ren) Φ ≡ Φ
+  id-ren-Formula {Φ = ⊥} = refl
   id-ren-Formula {Φ = t ≈ u} = cong₂ _≈_ id-ren-Term id-ren-Term
   id-ren-Formula {Φ = t ∈ u} = cong₂ _∈_ id-ren-Term id-ren-Term
   id-ren-Formula {Φ = Φ ∧ Ψ} = cong₂ _∧_ id-ren-Formula id-ren-Formula
   id-ren-Formula {Φ = Φ ⇒ Ψ} = cong₂ _⇒_ id-ren-Formula id-ren-Formula
   id-ren-Formula {Φ = Φ ⇔ Ψ} = cong₂ _⇔_ id-ren-Formula id-ren-Formula
-  id-ren-Formula {Φ = ¬ Φ} = cong ¬_ id-ren-Formula
   id-ren-Formula {Φ = all Φ} =
     cong
       all
@@ -155,12 +155,12 @@ mutual
         (id-ren-Formula {Φ = Φ}))
 
 id-ren-formula : ∀ {Γ} {φ : formula Γ} → ren-formula id-ren φ ≡ φ
+id-ren-formula {φ = ⊥} = refl
 id-ren-formula {φ = svar x ≈ svar y} = refl
 id-ren-formula {φ = svar x ∈ svar y} = refl
 id-ren-formula {φ = φ ∧ ψ} = cong₂ _∧_ id-ren-formula id-ren-formula
 id-ren-formula {φ = φ ⇒ ψ} = cong₂ _⇒_ id-ren-formula id-ren-formula
 id-ren-formula {φ = φ ⇔ ψ} = cong₂ _⇔_ id-ren-formula id-ren-formula
-id-ren-formula {φ = ¬ φ} = cong ¬_ id-ren-formula
 id-ren-formula {φ = all φ} =
   cong
     all
@@ -192,12 +192,12 @@ mutual
 
   ren-comp-Formula : ∀ {C Γ Δ Ω} {Φ : Formula C Γ} (r : ren Γ Δ) (r' : ren Δ Ω) →
     ren-Formula r' (ren-Formula r Φ) ≡ ren-Formula (r' ∘ r) Φ
+  ren-comp-Formula {Φ = ⊥} r r' = refl
   ren-comp-Formula {Φ = t ≈ u} r r' = cong₂ _≈_ (ren-comp-Term r r') (ren-comp-Term r r')
   ren-comp-Formula {Φ = t ∈ u} r r' = cong₂ _∈_ (ren-comp-Term r r') (ren-comp-Term r r')
   ren-comp-Formula {Φ = Φ ∧ Ψ} r r' = cong₂ _∧_ (ren-comp-Formula r r') (ren-comp-Formula r r')
   ren-comp-Formula {Φ = Φ ⇒ Ψ} r r' = cong₂ _⇒_ (ren-comp-Formula r r') (ren-comp-Formula r r')
   ren-comp-Formula {Φ = Φ ⇔ Ψ} r r' = cong₂ _⇔_ (ren-comp-Formula r r') (ren-comp-Formula r r')
-  ren-comp-Formula {Φ = ¬ Φ} r r' = cong ¬_ (ren-comp-Formula r r')
   ren-comp-Formula {Φ = all Φ} r r' =
     cong
       all
@@ -214,12 +214,12 @@ mutual
         (ren-comp-Formula {Φ = Φ} (extend-ren r) (extend-ren r')))
 
 ren-comp-formula : ∀ {Γ Δ Ω} {φ : formula Γ} (r : ren Γ Δ) (r' : ren Δ Ω) → ren-formula r' (ren-formula r φ) ≡ ren-formula (r' ∘ r) φ
+ren-comp-formula {φ = ⊥} r r' = refl
 ren-comp-formula {φ = svar x ≈ svar y} r r' = refl
 ren-comp-formula {φ = svar x ∈ svar y} r r' = refl
 ren-comp-formula {φ = φ ∧ ψ} r r' = cong₂ _∧_ (ren-comp-formula r r') (ren-comp-formula r r')
 ren-comp-formula {φ = φ ⇒ ψ} r r' = cong₂ _⇒_ (ren-comp-formula r r') (ren-comp-formula r r')
 ren-comp-formula {φ = φ ⇔ ψ} r r' = cong₂ _⇔_ (ren-comp-formula r r') (ren-comp-formula r r')
-ren-comp-formula {φ = ¬ φ} r r' = cong ¬_ (ren-comp-formula r r')
 ren-comp-formula {φ = all φ} r r' =
   cong
     all
@@ -235,14 +235,17 @@ ren-comp-formula {φ = exists φ} r r' =
       (extend-ren-comp-commute r r')
       (ren-comp-formula {φ = φ} (extend-ren r) (extend-ren r')))
 
+inj-term-ren-commute : ∀ {C Γ Δ} {t : term Γ} (r : ren Γ Δ) → ren-Term {C = C} r (inj-term t) ≡ inj-term (ren-term r t)
+inj-term-ren-commute {t = svar x} r = refl
+
 subst-inj-commute-ren : ∀ {C Γ Δ} {φ : formula (extend Γ)} (r : ren (extend Γ) Δ) →
   ren-Formula {C = C} r (inj-formula φ) ≡ inj-formula (ren-formula r φ)
+subst-inj-commute-ren {φ = ⊥} r = refl
 subst-inj-commute-ren {φ = svar x ≈ svar y} r = refl
 subst-inj-commute-ren {φ = svar x ∈ svar y} r = refl
 subst-inj-commute-ren {φ = φ ∧ ψ} r = cong₂ _∧_ (subst-inj-commute-ren r) (subst-inj-commute-ren r)
 subst-inj-commute-ren {φ = φ ⇒ ψ} r = cong₂ _⇒_ (subst-inj-commute-ren r) (subst-inj-commute-ren r)
 subst-inj-commute-ren {φ = φ ⇔ ψ} r = cong₂ _⇔_ (subst-inj-commute-ren r) (subst-inj-commute-ren r)
-subst-inj-commute-ren {φ = ¬ φ} r = cong ¬_ (subst-inj-commute-ren r)
 subst-inj-commute-ren {φ = all φ} r = cong all (subst-inj-commute-ren (extend-ren r))
 subst-inj-commute-ren {φ = exists φ} r = cong exists (subst-inj-commute-ren (extend-ren r))
 
@@ -261,6 +264,14 @@ ren-zero-extend-ctx-id-formula {φ = φ} =
       (cong (λ r' → ren-formula r' φ) ren-zero-extend-ctx-id)
       id-ren-formula)
 
+ren-zero-extend-ctx-id-Formula : ∀ {C Γ} {Φ : Formula C (extend Γ)} → ren-Formula (ren₀ zero) (ren-Formula (extend-ren suc) Φ) ≡ Φ
+ren-zero-extend-ctx-id-Formula {Φ = Φ} =
+  trans
+    (ren-comp-Formula (extend-ren suc) (ren₀ zero))
+    (trans
+      (cong (λ r' → ren-Formula r' Φ) ren-zero-extend-ctx-id)
+      id-ren-Formula)
+
 extend-suc-lemma : ∀ {Γ Δ} (r : ren Γ Δ) → (extend-ren suc) ∘ (extend-ren r) ≡ (extend-ren (extend-ren r)) ∘ (extend-ren suc)
 extend-suc-lemma r = fun-ext λ {zero → refl ; (suc x) → refl}
 
@@ -276,6 +287,15 @@ renaming-suc-commute-Term {t = t} r =
       (cong (λ r' → ren-Term r' t) (renaming-suc-commute r)))
     (sym (ren-comp-Term r suc))
 
+renaming-suc-commute-Formula : ∀ {C Γ Δ} {Φ : Formula C Γ} (r : ren Γ Δ) →
+  ren-Formula (extend-ren r) (ren-Formula suc Φ) ≡ ren-Formula suc (ren-Formula r Φ)
+renaming-suc-commute-Formula {Φ = Φ} r =
+  trans
+    (trans
+      (ren-comp-Formula suc (extend-ren r))
+      (cong (λ r' → ren-Formula r' Φ) (renaming-suc-commute r)))
+    (sym (ren-comp-Formula r suc))
+
 id-Subst : ∀ {C Γ} → Subst Γ C C
 id-Subst c = cvar c
 
@@ -286,12 +306,12 @@ mutual
   id-Subst-Term {t = class Φ} = cong class id-Subst-Formula
 
   id-Subst-Formula : ∀ {C Γ} {Φ : Formula C Γ} → Subst-Formula id-Subst Φ ≡ Φ
+  id-Subst-Formula {Φ = ⊥} = refl
   id-Subst-Formula {Φ = t ≈ u} = cong₂ _≈_ id-Subst-Term id-Subst-Term
   id-Subst-Formula {Φ = t ∈ u} = cong₂ _∈_ id-Subst-Term id-Subst-Term
   id-Subst-Formula {Φ = Φ ∧ Ψ} = cong₂ _∧_ id-Subst-Formula id-Subst-Formula
   id-Subst-Formula {Φ = Φ ⇒ Ψ} = cong₂ _⇒_ id-Subst-Formula id-Subst-Formula
   id-Subst-Formula {Φ = Φ ⇔ Ψ} = cong₂ _⇔_ id-Subst-Formula id-Subst-Formula
-  id-Subst-Formula {Φ = ¬ Φ} = cong ¬_ id-Subst-Formula
   id-Subst-Formula {Γ = Γ} {Φ = all Φ} = cong all id-Subst-Formula
   id-Subst-Formula {Φ = exists Φ} = cong exists id-Subst-Formula
 
@@ -319,12 +339,12 @@ mutual
 
   comp-rS-Formula : ∀ {C D Γ Δ} {Φ : Formula C Γ} (σ : Subst Γ C D) (r : ren Γ Δ) →
     ren-Formula r (Subst-Formula σ Φ) ≡ Subst-Formula (comp-rS r σ) (ren-Formula r Φ)
+  comp-rS-Formula {Φ = ⊥} σ r = refl
   comp-rS-Formula {Φ = t ≈ u} σ r = cong₂ _≈_ (comp-rS-Term {t = t} σ r) (comp-rS-Term {t = u} σ r)
   comp-rS-Formula {Φ = t ∈ u} σ r = cong₂ _∈_ (comp-rS-Term {t = t} σ r) (comp-rS-Term {t = u} σ r)
   comp-rS-Formula {Φ = Φ ∧ Ψ} σ r = cong₂ _∧_ (comp-rS-Formula {Φ = Φ} σ r) (comp-rS-Formula {Φ = Ψ} σ r)
   comp-rS-Formula {Φ = Φ ⇒ Ψ} σ r = cong₂ _⇒_ (comp-rS-Formula {Φ = Φ} σ r) (comp-rS-Formula {Φ = Ψ} σ r)
   comp-rS-Formula {Φ = Φ ⇔ Ψ} σ r = cong₂ _⇔_ (comp-rS-Formula {Φ = Φ} σ r) (comp-rS-Formula {Φ = Ψ} σ r)
-  comp-rS-Formula {Φ = ¬ Φ} σ r = cong ¬_ (comp-rS-Formula {Φ = Φ} σ r)
   comp-rS-Formula {Φ = all Φ} σ r =
     cong
       all
@@ -360,12 +380,12 @@ mutual
 
   Subst-comp-Formula : ∀ {C D E Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) (σ' : Subst Γ D E) →
     Subst-Formula σ' (Subst-Formula σ Φ) ≡ Subst-Formula (σ' ∘c σ) Φ
+  Subst-comp-Formula {Φ = ⊥} σ σ' = refl
   Subst-comp-Formula {Φ = t ≈ u} σ σ' = cong₂ _≈_ (Subst-comp-Term {t = t} σ σ') (Subst-comp-Term {t = u} σ σ')
   Subst-comp-Formula {Φ = t ∈ u} σ σ' = cong₂ _∈_ (Subst-comp-Term {t = t} σ σ') (Subst-comp-Term {t = u} σ σ')
   Subst-comp-Formula {Φ = Φ ∧ Ψ} σ σ' = cong₂ _∧_ (Subst-comp-Formula σ σ') (Subst-comp-Formula σ σ')
   Subst-comp-Formula {Φ = Φ ⇒ Ψ} σ σ' = cong₂ _⇒_ (Subst-comp-Formula σ σ') (Subst-comp-Formula σ σ')
   Subst-comp-Formula {Φ = Φ ⇔ Ψ} σ σ' = cong₂ _⇔_ (Subst-comp-Formula σ σ') (Subst-comp-Formula σ σ')
-  Subst-comp-Formula {Φ = ¬ Φ} σ σ' = cong ¬_ (Subst-comp-Formula σ σ')
   Subst-comp-Formula {Φ = all Φ} σ σ' =
     cong
       all
@@ -383,12 +403,12 @@ extend-empty-eq : ∀ {C Γ} → extend-Subst {D = C} (empty-Subst {Γ = Γ}) �
 extend-empty-eq = fun-ext λ ()
 
 Subst-empty-id : ∀ {C Γ} {φ : formula Γ} → Subst-Formula {D = C} empty-Subst (inj-formula φ) ≡ inj-formula φ
+Subst-empty-id {φ = ⊥} = refl
 Subst-empty-id {φ = svar x ≈ svar y} = refl
 Subst-empty-id {φ = svar x ∈ svar y} = refl
 Subst-empty-id {φ = φ ∧ ψ} = cong₂ _∧_ Subst-empty-id Subst-empty-id
 Subst-empty-id {φ = φ ⇒ ψ} = cong₂ _⇒_ Subst-empty-id Subst-empty-id
 Subst-empty-id {φ = φ ⇔ ψ} = cong₂ _⇔_ Subst-empty-id Subst-empty-id
-Subst-empty-id {φ = ¬ φ} = cong ¬_ Subst-empty-id
 Subst-empty-id {φ = all φ} =
   cong
     all
@@ -401,6 +421,34 @@ Subst-empty-id {φ = exists φ} =
     (trans
       (cong (λ σ → Subst-Formula σ (inj-formula φ)) extend-empty-eq)
       Subst-empty-id)
+
+suc-var-extend-suc-is-suc-ren-var : ∀ {C Γ} {x : Var Γ} {Φ : Formula C (extend Γ)} →
+  ren-Formula (ren₀ (suc x)) (ren-Formula (extend-ren suc) Φ) ≡ ren-Formula suc (ren-Formula (ren₀ x) Φ)
+suc-var-extend-suc-is-suc-ren-var {Φ = Φ} =
+  trans
+    (ren-comp-Formula _ _)
+    (trans
+      (cong (λ r → ren-Formula r Φ) lemma)
+      (sym (ren-comp-Formula _ _)))
+  where
+    lemma : ∀ {Γ} {x : Var Γ} → ren₀ (suc x) ∘ extend-ren suc ≡ suc ∘ (ren₀ x)
+    lemma = fun-ext λ {zero → refl ; (suc x) → refl}
+
+ren₀-under-extend-comp-eq : ∀ {Γ Δ} {x : Var Γ} (r : ren Γ Δ) → (ren₀ (r x)) ∘ (extend-ren r) ≡ r ∘ (ren₀ x)
+ren₀-under-extend-comp-eq r = fun-ext λ {zero → refl ; (suc x) → refl}
+
+ren₀-under-extend-ren : ∀ {C Γ Δ} {x : Var Γ} {Φ : Formula C (extend Γ)} (r : ren Γ Δ) →
+  ren-Formula (ren₀ (r x)) (ren-Formula (extend-ren r) Φ) ≡ ren-Formula r (ren-Formula (ren₀ x) Φ)
+ren₀-under-extend-ren {x = x} {Φ = Φ} r =
+  trans
+    (ren-comp-Formula (extend-ren r) (ren₀ (r x)))
+    (trans
+      (cong (λ r' → ren-Formula r' Φ) (ren₀-under-extend-comp-eq r))
+      (sym (ren-comp-Formula (ren₀ x) r)))
+
+ren-term-subst-lemma : ∀ {C Γ Δ} {t : term Γ} {Φ : Formula C (extend Γ)} (r : ren Γ Δ) →
+  (ren-Formula (extend-ren r) Φ) [ ren-term r t ]F ≡ ren-Formula r (Φ [ t ]F)
+ren-term-subst-lemma {t = svar x} r = ren₀-under-extend-ren r
 
 record Sbs (C : Set) (Γ : Ctx) (D : Set) (Δ : Ctx) : Set where
   field

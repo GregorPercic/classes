@@ -12,9 +12,6 @@ open import Agda.Primitive
 _↔_ : ∀ {ℓ} → Set ℓ → Set ℓ → Set ℓ
 ty ↔ ty' = (ty → ty') × (ty' → ty)
 
-transport-proof : ∀ {T C Γ} {Φ Ψ : Formula C Γ} → (Φ ≡ Ψ) → Proof T Φ → Proof T Ψ
-transport-proof {T = T} e p = ≡-subst (λ Ξ → Proof T Ξ) e p
-
 -- r-inj-∧ : ∀ {C Γ} {Φ Ψ Φ' Ψ' : Formula C Γ} → (Φ ∧ Ψ ≡ Φ' ∧ Ψ') → Ψ ≡ Ψ'
 -- r-inj-∧ refl = refl
 -- 
@@ -201,18 +198,6 @@ ren₀-under-extend-Subst-Formula {x = x} σ =
   trans
     (comp-rS-Formula (extend-Subst σ) (ren₀ x))
     (ren₀-extend-Subst-is-Subst-Formula σ)
-
-ren₀-under-extend-comp-eq : ∀ {Γ Δ} {x : Var Γ} (r : ren Γ Δ) → (ren₀ (r x)) ∘ (extend-ren r) ≡ r ∘ (ren₀ x)
-ren₀-under-extend-comp-eq r = fun-ext λ {zero → refl ; (suc x) → refl}
-
-ren₀-under-extend-ren : ∀ {C Γ Δ} {x : Var Γ} {Φ : Formula C (extend Γ)} (r : ren Γ Δ) →
-  ren-Formula (ren₀ (r x)) (ren-Formula (extend-ren r) Φ) ≡ ren-Formula r (ren-Formula (ren₀ x) Φ)
-ren₀-under-extend-ren {x = x} {Φ = Φ} r =
-  trans
-    (ren-comp-Formula (extend-ren r) (ren₀ (r x)))
-    (trans
-      (cong (λ r' → ren-Formula r' Φ) (ren₀-under-extend-comp-eq r))
-      (sym (ren-comp-Formula (ren₀ x) r)))
 
 weird-eq : ∀ {C : Set} {Γ} {x : Var Γ} {Φ : Formula₀ (extend Γ)} →
   _≡_ {a = lzero} {A = Formula C Γ}

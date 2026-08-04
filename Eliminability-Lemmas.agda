@@ -3,6 +3,7 @@ open import Substitutions
 
 
 elim : ∀ {Γ} → Formula₀ Γ → formula Γ
+elim ⊥ = ⊥
 elim (svar x ≈ svar y) = svar x ≈ svar y
 elim (svar x ≈ class Φ) = all (svar zero ∈ svar (suc x) ⇔ elim Φ)
 elim (class Φ ≈ svar x) = all (elim Φ ⇔ svar zero ∈ svar (suc x))
@@ -13,7 +14,7 @@ elim (class Φ ∈ svar x) = exists ((all (svar zero ∈ svar (suc zero) ⇔ ext
 elim (class Φ ∈ class Ψ) = exists ((all (svar zero ∈ svar (suc zero) ⇔ extend-formula-ctx (elim Φ))) ∧ elim Ψ)
 elim (Φ ∧ Ψ) = elim Φ ∧ elim Ψ
 elim (Φ ⇔ Ψ) = elim Φ ⇔ elim Ψ
-elim (¬ Φ) = ¬ (elim Φ)
+elim (Φ ⇒ Ψ) = elim Φ ⇒ elim Ψ
 elim (all Φ) = all (elim Φ)
 elim (exists Φ) = exists (elim Φ)
 
@@ -29,6 +30,7 @@ eq-subst-zero-Formula {Φ = Φ} =
 
 elim-renamings-commute : ∀ {Γ Δ} {Φ : Formula₀ Γ} (r : ren Γ Δ) →
   elim (ren-Formula r Φ) ≡ ren-formula r (elim Φ)
+elim-renamings-commute {Φ = ⊥} r = refl
 elim-renamings-commute {Φ = svar x ≈ svar y} r = refl
 elim-renamings-commute {Φ = svar x ≈ class Φ} r =
   cong (λ Ξ → all (svar zero ∈ svar (suc (r x)) ⇔ Ξ)) (elim-renamings-commute {Φ = Φ} (extend-ren r))
@@ -84,8 +86,8 @@ elim-renamings-commute {Φ = class Φ ∈ class Ψ} r =
           (cong (λ r' → ren-formula r' (elim Φ)) (extend-suc-lemma r)))
         (sym (ren-comp-formula (extend-ren suc) (extend-ren (extend-ren r))))
 elim-renamings-commute {Φ = Φ ∧ Ψ} r = cong₂ _∧_ (elim-renamings-commute {Φ = Φ} r) (elim-renamings-commute {Φ = Ψ} r)
+elim-renamings-commute {Φ = Φ ⇒ Ψ} r = cong₂ _⇒_ (elim-renamings-commute {Φ = Φ} r) (elim-renamings-commute {Φ = Ψ} r)
 elim-renamings-commute {Φ = Φ ⇔ Ψ} r = cong₂ _⇔_ (elim-renamings-commute {Φ = Φ} r) (elim-renamings-commute {Φ = Ψ} r)
-elim-renamings-commute {Φ = ¬ Φ} r = cong ¬_ (elim-renamings-commute {Φ = Φ} r)
 elim-renamings-commute {Φ = all Φ} r = cong all (elim-renamings-commute {Φ = Φ} (extend-ren r))
 elim-renamings-commute {Φ = exists Φ} r = cong exists (elim-renamings-commute {Φ = Φ} (extend-ren r))
 

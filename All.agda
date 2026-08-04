@@ -3,5 +3,5 @@ import Substitutions
 import Theory
 import Proof
 import Eliminability
-import Conservation
+-- import Conservation
 import Eliminability-Lemmas

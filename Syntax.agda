@@ -17,7 +17,6 @@ extend = suc
 
 infix 10 _≈_
 infix 10 _∈_
-infix  6 ¬_
 infixl 5 _∧_
 infixr 4 _⇒_
 infix 3 _⇔_
@@ -26,12 +25,12 @@ data term (Γ : Ctx) : Set where
   svar : Var Γ → term Γ
 
 data formula (Γ : Ctx) : Set where
+  ⊥ : formula Γ
   _≈_ : term Γ → term Γ → formula Γ
   _∈_ : term Γ → term Γ → formula Γ
   _∧_ : formula Γ → formula Γ → formula Γ
   _⇒_ : formula Γ → formula Γ → formula Γ
   _⇔_ : formula Γ → formula Γ → formula Γ
-  ¬_ : formula Γ → formula Γ
   all : formula (extend Γ) → formula Γ
   exists : formula (extend Γ) → formula Γ
 
@@ -42,12 +41,12 @@ mutual
     class : Formula C (extend Γ) → Term C Γ
 
   data Formula (C : Set) (Γ : Ctx) : Set where
+    ⊥ : Formula C Γ
     _≈_ : Term C Γ → Term C Γ → Formula C Γ
     _∈_ : Term C Γ → Term C Γ → Formula C Γ
     _∧_ : Formula C Γ → Formula C Γ → Formula C Γ
     _⇒_ : Formula C Γ → Formula C Γ → Formula C Γ
     _⇔_ : Formula C Γ → Formula C Γ → Formula C Γ
-    ¬_ : Formula C Γ → Formula C Γ
     all : Formula C (extend Γ) → Formula C Γ
     exists : Formula C (extend Γ) → Formula C Γ
 
@@ -61,11 +60,11 @@ inj-term : ∀ {Γ C} → term Γ → Term C Γ
 inj-term (svar x) = svar x
 
 inj-formula : ∀ {Γ C} → formula Γ → Formula C Γ
+inj-formula ⊥ = ⊥
 inj-formula (t ≈ u) = (inj-term t) ≈ (inj-term u)
 inj-formula (t ∈ u) = (inj-term t) ∈ (inj-term u)
 inj-formula (φ ∧ ψ) = (inj-formula φ) ∧ (inj-formula ψ)
 inj-formula (φ ⇒ ψ) = (inj-formula φ) ⇒ (inj-formula ψ)
 inj-formula (φ ⇔ ψ) = (inj-formula φ) ⇔ (inj-formula ψ)
-inj-formula (¬ φ) = ¬ inj-formula φ
 inj-formula (all φ) = all (inj-formula φ)
 inj-formula (exists φ) = exists (inj-formula φ)
