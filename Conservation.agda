@@ -61,8 +61,64 @@ conservation-⇐ (≈-e {t = t} {u = u} p p') =
         (inj-formula-term-subst {t = t})
         (conservation-⇐ p')))
 
+elim-list-mem : ∀ {Γ Hyp} {Φ : Formula₀ Γ} → Hyp ∋ Φ → map elim Hyp ∋ elim Φ
+elim-list-mem here = here
+elim-list-mem (there is-in) = there (elim-list-mem is-in)
+
+Hyp-elim-lemma : ∀ {Γ} {Hyp : List (Formula₀ Γ)} → map elim (PProof.weaken-l Hyp) ≡ Proof.weaken-l (map elim Hyp)
+Hyp-elim-lemma {Hyp = []} = refl
+Hyp-elim-lemma {Hyp = Φ ∷l Hyp} = cong₂ _∷l_ (elim-renamings-commute {Φ = Φ} suc) Hyp-elim-lemma
+
+elim-subst-term-commute : ∀ {Γ} {t : term Γ} {Φ : Formula₀ (extend Γ)} → elim (Φ [ t ]F) ≡ (elim Φ [ t ]f)
+elim-subst-term-commute {t = svar x} {Φ = Φ} = elim-renamings-commute {Φ = Φ} (ren₀ x)
+
+elim-inj-inv : ∀ {Γ} {φ : formula Γ} → elim (inj-formula φ) ≡ φ
+elim-inj-inv {φ = ⊥} = refl
+elim-inj-inv {φ = svar x ≈ svar y} = refl
+elim-inj-inv {φ = svar x ∈ svar y} = refl
+elim-inj-inv {φ = φ ∧ ψ} = cong₂ _∧_ elim-inj-inv elim-inj-inv
+elim-inj-inv {φ = φ ⇒ ψ} = cong₂ _⇒_ elim-inj-inv elim-inj-inv
+elim-inj-inv {φ = φ ⇔ ψ} = cong₂ _⇔_ elim-inj-inv elim-inj-inv
+elim-inj-inv {φ = all φ} = cong all elim-inj-inv
+elim-inj-inv {φ = exists φ} = cong exists elim-inj-inv
+
 conservation-⇒-lemma : ∀ {Γ Hyp} {Φ : Formula₀ Γ} → Proof CT {𝟘} {Γ} Hyp Φ → proof ST {Γ} (map elim Hyp) (elim Φ)
-conservation-⇒-lemma p = {!  !}
+conservation-⇒-lemma (axiom (set∈class C Γ y Φ) σ r) = {!   !}
+conservation-⇒-lemma (axiom class∈class σ r) = {!   !}
+conservation-⇒-lemma (axiom class≈class σ r) = {!   !}
+conservation-⇒-lemma (Hyp-ax is-in) = hyp-ax (elim-list-mem is-in)
+conservation-⇒-lemma (≈-refl {t = svar x}) = ≈-refl
+conservation-⇒-lemma (≈-refl {t = class Φ}) = all-⇔-refl
+conservation-⇒-lemma (∧-i p p') = ∧-i (conservation-⇒-lemma p) (conservation-⇒-lemma p')
+conservation-⇒-lemma (⇒-i p) = ⇒-i (conservation-⇒-lemma p)
+conservation-⇒-lemma (⇔-i p p') = ⇔-i (conservation-⇒-lemma p) (conservation-⇒-lemma p')
+conservation-⇒-lemma (all-i p) = all-i (transport-proof-hyp Hyp-elim-lemma (conservation-⇒-lemma p))
+conservation-⇒-lemma (exists-i t p) = exists-i t (transport-proof (elim-subst-term-commute {t = t}) (conservation-⇒-lemma p))
+conservation-⇒-lemma (⊥-e p) = ⊥-e (conservation-⇒-lemma p)
+conservation-⇒-lemma (∧-e-l p) = ∧-e-l (conservation-⇒-lemma p)
+conservation-⇒-lemma (∧-e-r p) = ∧-e-r (conservation-⇒-lemma p)
+conservation-⇒-lemma (⇒-e p p') = ⇒-e (conservation-⇒-lemma p) (conservation-⇒-lemma p')
+conservation-⇒-lemma (⇔-e-lr p) = ⇔-e-lr (conservation-⇒-lemma p)
+conservation-⇒-lemma (⇔-e-rl p) = ⇔-e-rl (conservation-⇒-lemma p)
+conservation-⇒-lemma (exists-e {Ψ = Ψ} p p') =
+  exists-e
+    (conservation-⇒-lemma p)
+    (transport-proof-hyp
+      (cong₂ _∷_ Hyp-elim-lemma refl)
+      (transport-proof
+        (elim-renamings-commute {Φ = Ψ} suc)
+        (conservation-⇒-lemma p')))
+conservation-⇒-lemma (all-e t p) = transport-proof (sym (elim-subst-term-commute {t = t})) (all-e t (conservation-⇒-lemma p))
+conservation-⇒-lemma (≈-e {t = t} {u = u} eq p) =
+  transport-proof
+    (sym (elim-subst-term-commute {t = u}))
+    (≈-e {t = t} {u = u}
+      (transport-proof
+        elim-inj-inv
+        (conservation-⇒-lemma eq))
+      (transport-proof
+        (elim-subst-term-commute {t = t})
+        (conservation-⇒-lemma p)))
 
 magic-Subst : ∀ {C D Γ} → Subst Γ C D
 magic-Subst _ = class ⊥
@@ -76,16 +132,6 @@ inj-formula-Subst-id {φ = φ ⇒ ψ} σ = cong₂ _⇒_ (inj-formula-Subst-id �
 inj-formula-Subst-id {φ = φ ⇔ ψ} σ = cong₂ _⇔_ (inj-formula-Subst-id σ) (inj-formula-Subst-id σ)
 inj-formula-Subst-id {φ = all φ} σ = cong all (inj-formula-Subst-id (extend-Subst σ))
 inj-formula-Subst-id {φ = exists φ} σ = cong exists (inj-formula-Subst-id (extend-Subst σ))
-
-elim-inj-inv : ∀ {Γ} {φ : formula Γ} → elim (inj-formula φ) ≡ φ
-elim-inj-inv {φ = ⊥} = refl
-elim-inj-inv {φ = svar x ≈ svar y} = refl
-elim-inj-inv {φ = svar x ∈ svar y} = refl
-elim-inj-inv {φ = φ ∧ ψ} = cong₂ _∧_ elim-inj-inv elim-inj-inv
-elim-inj-inv {φ = φ ⇒ ψ} = cong₂ _⇒_ elim-inj-inv elim-inj-inv
-elim-inj-inv {φ = φ ⇔ ψ} = cong₂ _⇔_ elim-inj-inv elim-inj-inv
-elim-inj-inv {φ = all φ} = cong all elim-inj-inv
-elim-inj-inv {φ = exists φ} = cong exists elim-inj-inv
 
 conservation-⇒ : ∀ {C Γ hyp} {φ : formula Γ} → Proof CT {C = C} (inj-formula-l hyp) (inj-formula φ) → proof ST hyp φ
 conservation-⇒ {hyp = hyp} {φ = φ} p =
