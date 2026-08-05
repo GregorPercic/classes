@@ -5,5 +5,5 @@ import TTheory
 import Proof
 import PProof
 import Eliminability
--- import Conservation
+import Conservation
 import Eliminability-Lemmas
