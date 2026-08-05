@@ -83,7 +83,22 @@ elim-inj-inv {φ = all φ} = cong all elim-inj-inv
 elim-inj-inv {φ = exists φ} = cong exists elim-inj-inv
 
 conservation-⇒-lemma : ∀ {Γ Hyp} {Φ : Formula₀ Γ} → Proof CT {𝟘} {Γ} Hyp Φ → proof ST {Γ} (map elim Hyp) (elim Φ)
-conservation-⇒-lemma (axiom (set∈class C Γ y Φ) σ r) = {!   !}
+conservation-⇒-lemma (axiom (set∈class C Γ y Ψ) σ r) =
+  Proof.eq-to-⇔ (lemma {y = y} {Φ = Ψ} {r = r} {σ = σ})
+  where
+    lemma : ∀ {C Γ Δ} {y : Var Γ} {Φ : Formula C (extend Γ)} {r : ren Γ Δ} {σ : Subst Δ C 𝟘} → 
+      ren-formula (ren₀ (r y)) (elim (Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Φ)))
+        ≡
+      elim (Subst-Formula σ (ren-Formula r (ren-Formula (ren₀ y) Φ)))
+    lemma {Φ = Φ} {r = r} {σ = σ} =
+      trans
+        (sym (elim-subst-term-commute {Φ = Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Φ)}))
+        (cong elim
+          (trans
+            (ren₀-under-extend-Subst-Formula {Φ = ren-Formula (extend-ren r) Φ} σ)
+            (cong
+              (λ Ξ → Subst-Formula σ Ξ)
+              (ren₀-under-extend-ren r))))
 conservation-⇒-lemma (axiom class∈class σ r) = {!   !}
 conservation-⇒-lemma (axiom class≈class σ r) = {!   !}
 conservation-⇒-lemma (Hyp-ax is-in) = hyp-ax (elim-list-mem is-in)

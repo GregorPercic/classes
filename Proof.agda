@@ -126,3 +126,6 @@ transport-proof-hyp {thy = thy} e p = ≡-subst (λ h → proof thy h _) e p
 
 all-⇔-refl : ∀ {thy Γ} {Hyp} {φ : formula (extend Γ)} → proof thy Hyp (all (φ ⇔ φ))
 all-⇔-refl = all-i ⇔-refl
+
+eq-to-⇔ : ∀ {Γ thy hyp} {φ ψ : formula Γ} → φ ≡ ψ → proof thy hyp (φ ⇔ ψ)
+eq-to-⇔ refl = ⇔-refl
