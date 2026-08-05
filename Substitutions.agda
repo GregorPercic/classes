@@ -441,6 +441,18 @@ suc-var-extend-suc-is-suc-ren-var {Φ = Φ} =
     lemma : ∀ {Γ} {x : Var Γ} → ren₀ (suc x) ∘ extend-ren suc ≡ suc ∘ (ren₀ x)
     lemma = fun-ext λ {zero → refl ; (suc x) → refl}
 
+suc-var-extend-suc-is-suc-ren-var-formula : ∀ {Γ} {x : Var Γ} {φ : formula (extend Γ)} →
+  ren-formula (ren₀ (suc x)) (ren-formula (extend-ren suc) φ) ≡ ren-formula suc (ren-formula (ren₀ x) φ)
+suc-var-extend-suc-is-suc-ren-var-formula {φ = φ} =
+  trans
+    (ren-comp-formula _ _)
+    (trans
+      (cong (λ r → ren-formula r φ) lemma)
+      (sym (ren-comp-formula _ _)))
+  where
+    lemma : ∀ {Γ} {x : Var Γ} → ren₀ (suc x) ∘ extend-ren suc ≡ suc ∘ (ren₀ x)
+    lemma = fun-ext λ {zero → refl ; (suc x) → refl}
+
 ren₀-under-extend-comp-eq : ∀ {Γ Δ} {x : Var Γ} (r : ren Γ Δ) → (ren₀ (r x)) ∘ (extend-ren r) ≡ r ∘ (ren₀ x)
 ren₀-under-extend-comp-eq r = fun-ext λ {zero → refl ; (suc x) → refl}
 

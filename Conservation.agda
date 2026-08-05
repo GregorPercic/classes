@@ -82,6 +82,17 @@ elim-inj-inv {φ = φ ⇔ ψ} = cong₂ _⇔_ elim-inj-inv elim-inj-inv
 elim-inj-inv {φ = all φ} = cong all elim-inj-inv
 elim-inj-inv {φ = exists φ} = cong exists elim-inj-inv
 
+subst-extend-elim-eq : ∀ {Γ} {Φ : Formula₀ (extend Γ)} →
+  ren-formula (ren₀ zero) (elim (ren-Formula (extend-ren suc) Φ)) ≡ elim Φ
+subst-extend-elim-eq {Φ = Φ} =
+  trans
+    (sym (elim-renamings-commute {Φ = ren-Formula (extend-ren suc) Φ} (ren₀ zero)))
+    (trans
+      (cong elim (ren-comp-Formula {Φ = Φ} (extend-ren suc) (ren₀ zero)))
+      (trans
+        (cong (λ r → elim (ren-Formula r Φ)) ren-zero-extend-ctx-id)
+        (cong elim (id-ren-Formula {Φ = Φ}))))
+
 conservation-⇒-lemma : ∀ {Γ Hyp} {Φ : Formula₀ Γ} → Proof CT {𝟘} {Γ} Hyp Φ → proof ST {Γ} (map elim Hyp) (elim Φ)
 conservation-⇒-lemma (axiom (set∈class C Γ y Ψ) σ r) =
   Proof.eq-to-⇔ (lemma {y = y} {Φ = Ψ} {r = r} {σ = σ})
@@ -99,7 +110,24 @@ conservation-⇒-lemma (axiom (set∈class C Γ y Ψ) σ r) =
             (cong
               (λ Ξ → Subst-Formula σ Ξ)
               (ren₀-under-extend-ren r))))
-conservation-⇒-lemma (axiom class∈class σ r) = {!   !}
+conservation-⇒-lemma (axiom class∈class σ r) with σ A | σ B
+... | svar x  | svar y = Proof.conservation-equiv
+... | svar x  | class Φ =
+  transport-proof
+    (cong (λ Ξ → (ren-formula (ren₀ x) (elim Φ) ⇔ exists (svar zero ≈ svar (suc x) ∧ Ξ)))
+      (sym (subst-extend-elim-eq {Φ = Φ})))
+    Proof.conservation-equiv
+... | class Φ | svar x =
+  Proof.eq-to-⇔
+    (cong
+      (λ Ξ → exists (all (svar zero ∈ svar (suc zero) ⇔ Ξ) ∧ svar zero ∈ svar (suc x)))
+      (sym (elim-renamings-commute {Φ = Φ} (extend-ren suc))))
+... | class Φ | class Ψ =
+  Proof.eq-to-⇔
+    (cong₂
+      (λ Ξ Ξ' → exists (all (svar zero ∈ svar (suc zero) ⇔ Ξ) ∧ Ξ'))
+      (sym (elim-renamings-commute {Φ = Φ} (extend-ren suc)))
+      (sym (subst-extend-elim-eq {Φ = Ψ})))
 conservation-⇒-lemma (axiom class≈class σ r) = {!   !}
 conservation-⇒-lemma (Hyp-ax is-in) = hyp-ax (elim-list-mem is-in)
 conservation-⇒-lemma (≈-refl {t = svar x}) = ≈-refl
@@ -200,15 +228,6 @@ conservation-corollary φ = conservation φ
 -- inj-elim-inj : ∀ {C Γ} {φ : formula Γ} → inj-formula {C = C} (elim (inj-formula φ)) ≡ inj-formula φ
 -- inj-elim-inj = cong inj-formula elim-inj-inv
 -- 
--- subst-extend-elim-eq : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → ren-formula (ren₀ zero) (elim (ren-Formula (extend-ren suc) Φ)) ≡ elim Φ
--- subst-extend-elim-eq {Φ = Φ} =
---   trans
---     (sym (elim-renamings-commute {Φ = ren-Formula (extend-ren suc) Φ} (ren₀ zero)))
---     (trans
---       (cong elim (ren-comp-Formula {Φ = Φ} (extend-ren suc) (ren₀ zero)))
---       (trans
---         (cong (λ r → elim (ren-Formula r Φ)) ren-zero-extend-ctx-id)
---         (cong elim (id-ren-Formula {Φ = Φ}))))
 -- 
 -- 
 -- weird-eq : ∀ {C : Set} {Γ} {x : Var Γ} {Φ : Formula₀ (extend Γ)} →

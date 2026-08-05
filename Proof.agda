@@ -129,3 +129,18 @@ all-⇔-refl = all-i ⇔-refl
 
 eq-to-⇔ : ∀ {Γ thy hyp} {φ ψ : formula Γ} → φ ≡ ψ → proof thy hyp (φ ⇔ ψ)
 eq-to-⇔ refl = ⇔-refl
+
+conservation-equiv : ∀ {thy Γ hyp} {x : Var Γ} {φ : formula (extend Γ)} →
+  -------------------------------------------------------------------
+  proof thy hyp (φ [ svar x ]f ⇔ exists (svar zero ≈ svar (suc x) ∧ φ))
+conservation-equiv {x = x} =
+  ⇔-i
+    (⇒-i (exists-i (svar x) (∧-i ≈-refl (hyp-ax here))))
+    (⇒-i
+      (exists-e (hyp-ax here)
+      (transport-proof
+        suc-var-extend-suc-is-suc-ren-var-formula
+        (≈-e (∧-e-l (hyp-ax here))
+          (transport-proof
+            (sym ren-zero-extend-ctx-id-formula)
+            (∧-e-r (hyp-ax here)))))))
