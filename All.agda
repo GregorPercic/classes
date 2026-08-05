@@ -1,7 +1,9 @@
 import Syntax
 import Substitutions
 import Theory
+import TTheory
 import Proof
+import PProof
 import Eliminability
 -- import Conservation
 import Eliminability-Lemmas

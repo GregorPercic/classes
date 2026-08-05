@@ -238,7 +238,7 @@ ren-comp-formula {φ = exists φ} r r' =
 inj-term-ren-commute : ∀ {C Γ Δ} {t : term Γ} (r : ren Γ Δ) → ren-Term {C = C} r (inj-term t) ≡ inj-term (ren-term r t)
 inj-term-ren-commute {t = svar x} r = refl
 
-subst-inj-commute-ren : ∀ {C Γ Δ} {φ : formula (extend Γ)} (r : ren (extend Γ) Δ) →
+subst-inj-commute-ren : ∀ {C Γ Δ} {φ : formula Γ} (r : ren Γ Δ) →
   ren-Formula {C = C} r (inj-formula φ) ≡ inj-formula (ren-formula r φ)
 subst-inj-commute-ren {φ = ⊥} r = refl
 subst-inj-commute-ren {φ = svar x ≈ svar y} r = refl
@@ -362,6 +362,10 @@ mutual
           (λ σ' → Subst-Formula σ' (ren-Formula (extend-ren r) Φ))
           (extend-comp-rS-commute r σ)))
 
+extend-Subst-suc-suc-Subst : ∀ {C D Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) →
+  Subst-Formula (extend-Subst σ) (ren-Formula suc Φ) ≡ ren-Formula suc (Subst-Formula σ Φ)
+extend-Subst-suc-suc-Subst σ = sym (comp-rS-Formula σ suc)
+
 extend-Subst-comp-commute : ∀ {C D E Γ} (σ : Subst Γ C D) (σ' : Subst Γ D E) →
   (extend-Subst σ') ∘c (extend-Subst σ) ≡ extend-Subst (σ' ∘c σ)
 extend-Subst-comp-commute {D = D} {Γ = Γ} σ σ' = fun-ext λ c → sym (comp-rS-Term {t = σ c} σ' suc)
@@ -401,6 +405,9 @@ mutual
 
 extend-empty-eq : ∀ {C Γ} → extend-Subst {D = C} (empty-Subst {Γ = Γ}) ≡ empty-Subst {Γ = extend Γ}
 extend-empty-eq = fun-ext λ ()
+
+Subst-term-id : ∀ {C D Γ} {t : term Γ} (σ : Subst Γ C D) → Subst-Term σ (inj-term t) ≡ inj-term t
+Subst-term-id {t = svar x} σ = refl
 
 Subst-empty-id : ∀ {C Γ} {φ : formula Γ} → Subst-Formula {D = C} empty-Subst (inj-formula φ) ≡ inj-formula φ
 Subst-empty-id {φ = ⊥} = refl
@@ -449,6 +456,35 @@ ren₀-under-extend-ren {x = x} {Φ = Φ} r =
 ren-term-subst-lemma : ∀ {C Γ Δ} {t : term Γ} {Φ : Formula C (extend Γ)} (r : ren Γ Δ) →
   (ren-Formula (extend-ren r) Φ) [ ren-term r t ]F ≡ ren-Formula r (Φ [ t ]F)
 ren-term-subst-lemma {t = svar x} r = ren₀-under-extend-ren r
+
+ren₀-suc-eq-Term : ∀ {C Γ} {x : Var Γ} {t : Term C Γ} → ren-Term (ren₀ x) (ren-Term suc t) ≡ t
+ren₀-suc-eq-Term {x = x} {t = t} =
+  trans
+    (ren-comp-Term suc (ren₀ x))
+    (trans
+      (cong (λ r' → ren-Term r' t) (lemma {x = x}))
+      id-ren-Term)
+  where
+    lemma : ∀ {Γ} {x : Var Γ} → (ren₀ x) ∘ suc ≡ id-ren
+    lemma = fun-ext (λ {zero → refl ; (suc y) → refl})
+
+ren₀-extend-Subst-is-Subst-Formula : ∀ {C D Γ} {x : Var Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) →
+  Subst-Formula (comp-rS (ren₀ x) (extend-Subst σ)) Φ ≡ Subst-Formula σ Φ
+ren₀-extend-Subst-is-Subst-Formula {Φ = Φ} σ = cong (λ σ' → Subst-Formula σ' Φ) (lemma σ)
+  where
+    lemma : ∀ {C D Γ} {x : Var Γ} (σ : Subst Γ C D) → comp-rS (ren₀ x) (extend-Subst σ) ≡ σ
+    lemma σ = fun-ext λ c → ren₀-suc-eq-Term
+
+ren₀-under-extend-Subst-Formula : ∀ {C D Γ} {x : Var Γ} {Φ : Formula C (extend Γ)} (σ : Subst Γ C D) →
+  ren-Formula (ren₀ x) (Subst-Formula (extend-Subst σ) Φ) ≡ Subst-Formula σ (ren-Formula (ren₀ x) Φ)
+ren₀-under-extend-Subst-Formula {x = x} σ =
+  trans
+    (comp-rS-Formula (extend-Subst σ) (ren₀ x))
+    (ren₀-extend-Subst-is-Subst-Formula σ)
+
+subst-term-extend-Subst-Formula : ∀ {C D Γ} {t : term Γ} {Φ : Formula C (extend Γ)} (σ : Subst Γ C D) →
+  (Subst-Formula (extend-Subst σ) Φ) [ t ]F ≡ Subst-Formula σ (Φ [ t ]F)
+subst-term-extend-Subst-Formula {t = svar x} = ren₀-under-extend-Subst-Formula
 
 record Sbs (C : Set) (Γ : Ctx) (D : Set) (Δ : Ctx) : Set where
   field

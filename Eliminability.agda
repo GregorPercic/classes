@@ -2,8 +2,8 @@ open import Data.Product
 
 open import Syntax
 open import Substitutions
-open import Theory
-open import Proof
+open import TTheory
+open import PProof
 open import Eliminability-Lemmas public
 
 
