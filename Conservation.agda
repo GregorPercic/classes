@@ -29,7 +29,7 @@ inj-formula-term-subst : ∀ {C Γ} {t : term Γ} {φ : formula (extend Γ)} →
 inj-formula-term-subst {t = svar x} = sym (subst-inj-commute-ren (ren₀ x))
 
 conservation-⇐ : ∀ {C Γ hyp} {φ : formula Γ} → proof ST hyp φ → Proof CT {C = C} (inj-formula-l hyp) (inj-formula φ)
-conservation-⇐ (axiom (ext Γ x y) r) = axiom class≈class (λ {A → svar (r x) ; B → svar (r y)}) empty-ren
+conservation-⇐ (axiom ext r) = all-i (all-i (axiom class≈class (λ {A → svar (suc zero) ; B → svar zero}) empty-ren))
 conservation-⇐ (hyp-ax is-in) = Hyp-ax (inj-list-mem is-in)
 conservation-⇐ ≈-refl = ≈-refl
 conservation-⇐ (∧-i p p') = ∧-i (conservation-⇐ p) (conservation-⇐ p')
@@ -129,7 +129,7 @@ conservation-⇒-lemma (axiom class∈class σ r) with σ A | σ B
       (sym (elim-renamings-commute {Φ = Φ} (extend-ren suc)))
       (sym (subst-extend-elim-eq {Φ = Ψ})))
 conservation-⇒-lemma {Γ = Γ} (axiom class≈class σ r) with σ A | σ B
-... | svar x  | svar y = axiom (ext Γ x y) id-ren
+... | svar x  | svar y = all-e (svar y) (all-e (svar x) (axiom ext empty-ren))
 ... | svar x  | class Φ =
   Proof.eq-to-⇔
     (cong

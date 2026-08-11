@@ -119,23 +119,25 @@ transport-Proof {T = T} {Hyp = Hyp} e p = ≡-subst (λ Ξ → Proof T Hyp Ξ) e
 transport-Proof-Hyp : ∀ {T C Γ Hyp Hyp'} {Φ : Formula C Γ} → (Hyp ≡ Hyp') → Proof T Hyp Φ → Proof T Hyp' Φ
 transport-Proof-Hyp {T = T} e p = ≡-subst (λ H → Proof T H _) e p
 
-data _⊆-Hyp_ {C : Set} {Γ : Ctx} : List (Formula C Γ) → List (Formula C Γ) → Set where
-  self : ∀ {Hyp} → Hyp ⊆-Hyp Hyp
-  step : ∀ {Φ Hyp Hyp'} → Hyp ⊆-Hyp Hyp' → Hyp ⊆-Hyp (Hyp' ∷ Φ)
-  both-step : ∀ {Φ Hyp Hyp'} → Hyp ⊆-Hyp Hyp' → (Hyp ∷ Φ) ⊆-Hyp (Hyp' ∷ Φ)
-
-⊆-Hyp-lemma : ∀ {C Γ} {Φ : Formula C Γ} {Hyp Hyp'} → Hyp ⊆-Hyp Hyp' → Hyp ∋ Φ → Hyp' ∋ Φ
-⊆-Hyp-lemma self is-in = is-in
-⊆-Hyp-lemma (step sub) is-in = there (⊆-Hyp-lemma sub is-in)
-⊆-Hyp-lemma (both-step sub) here = here
-⊆-Hyp-lemma (both-step sub) (there is-in) = there (⊆-Hyp-lemma sub is-in)
 
 -- Weakening as an admissible rule
+-- the subset premise was suggested by ChatGPT, but all code is my original work
 
-weaken-l-preserves-⊆-Hyp : ∀ {C Γ} {Hyp Hyp' : List (Formula C Γ)} → Hyp ⊆-Hyp Hyp' → (weaken-l Hyp) ⊆-Hyp (weaken-l Hyp')
-weaken-l-preserves-⊆-Hyp self = self
-weaken-l-preserves-⊆-Hyp (step sub) = step (weaken-l-preserves-⊆-Hyp sub)
-weaken-l-preserves-⊆-Hyp (both-step sub) = both-step (weaken-l-preserves-⊆-Hyp sub)
+ren-list-mem : ∀ {C Γ Δ Hyp} {Φ : Formula C Γ} (r : ren Γ Δ) → Hyp ∋ Φ → (map (ren-Formula r) Hyp) ∋ (ren-Formula r Φ)
+ren-list-mem {Φ = Φ} r here = here
+ren-list-mem {Φ = Φ} r (there is-in) = there (ren-list-mem r is-in)
+
+_⊆-Hyp_ : {C : Set} {Γ : Ctx} → List (Formula C Γ) → List (Formula C Γ) → Set
+Hyp ⊆-Hyp Hyp' = ∀ {Φ} → Hyp ∋ Φ → Hyp' ∋ Φ
+
+⊆-Hyp-both-step : ∀ {C Γ Hyp Hyp'} {Φ : Formula C Γ} → Hyp ⊆-Hyp Hyp' → (Hyp ∷ Φ) ⊆-Hyp (Hyp' ∷ Φ)
+⊆-Hyp-both-step sub here = here
+⊆-Hyp-both-step sub (there is-in) = there (sub is-in)
+
+⊆-Hyp-weaken-l : ∀ {C Γ} {Hyp Hyp' : List (Formula C Γ)} → Hyp ⊆-Hyp Hyp' → weaken-l Hyp ⊆-Hyp weaken-l Hyp'
+⊆-Hyp-weaken-l {Hyp = []} sub ()
+⊆-Hyp-weaken-l {Hyp = Φ ∷l Hyp} sub here = ren-list-mem suc (sub here)
+⊆-Hyp-weaken-l {Hyp = Φ ∷l Hyp} sub (there is-in) = ⊆-Hyp-weaken-l (λ is-in' → sub (there is-in')) is-in
 
 general-wk :
   ∀ {T C Γ} {Hyp Hyp'} {Φ : Formula C Γ}
@@ -144,29 +146,29 @@ general-wk :
   -----------------
   → Proof T Hyp' Φ
 general-wk sub (axiom i σ r) = axiom i σ r
-general-wk sub (⊥-e p) = ⊥-e (general-wk sub p)
-general-wk sub (Hyp-ax is-in) = Hyp-ax (⊆-Hyp-lemma sub is-in)
+general-wk sub (Hyp-ax is-in) = Hyp-ax (sub is-in)
 general-wk sub ≈-refl = ≈-refl
 general-wk sub (∧-i p p') = ∧-i (general-wk sub p) (general-wk sub p')
-general-wk sub (⇒-i p) = ⇒-i (general-wk (both-step sub) p)
+general-wk sub (⇒-i p) = ⇒-i (general-wk (⊆-Hyp-both-step sub) p)
 general-wk sub (⇔-i p p') = ⇔-i (general-wk sub p) (general-wk sub p')
-general-wk sub (all-i p) = all-i (general-wk (weaken-l-preserves-⊆-Hyp sub) p)
+general-wk sub (all-i p) = all-i (general-wk (⊆-Hyp-weaken-l sub) p)
 general-wk sub (exists-i t p) = exists-i t (general-wk sub p)
+general-wk sub (⊥-e p) = ⊥-e (general-wk sub p)
 general-wk sub (∧-e-l p) = ∧-e-l (general-wk sub p)
 general-wk sub (∧-e-r p) = ∧-e-r (general-wk sub p)
 general-wk sub (⇒-e p p') = ⇒-e (general-wk sub p) (general-wk sub p')
 general-wk sub (⇔-e-lr p) = ⇔-e-lr (general-wk sub p)
 general-wk sub (⇔-e-rl p) = ⇔-e-rl (general-wk sub p)
-general-wk sub (exists-e p p') = exists-e (general-wk sub p) (general-wk (both-step (weaken-l-preserves-⊆-Hyp sub)) p')
+general-wk sub (exists-e p p') = exists-e (general-wk sub p) (general-wk (⊆-Hyp-both-step (⊆-Hyp-weaken-l sub)) p')
 general-wk sub (all-e t p) = all-e t (general-wk sub p)
-general-wk sub (≈-e eq p) = ≈-e (general-wk sub eq) (general-wk sub p)
+general-wk sub (≈-e p p') = ≈-e (general-wk sub p) (general-wk sub p')
 
 wk :
   ∀ {T C Γ} {Hyp} {Φ Ψ : Formula C Γ}
   → Proof T Hyp Φ
   ---------------------
   → Proof T (Hyp ∷ Ψ) Φ
-wk = general-wk (step self)
+wk = general-wk (λ is-in → there is-in)
 
 -- Derived rules of inference we need
 
@@ -335,10 +337,6 @@ axiom-exact :
   -----------------------
   Proof T Hyp (thy-axi T i)
 axiom-exact {T = T} i {Hyp = Hyp} = ≡-subst (λ Ξ → Proof T Hyp Ξ) id-ren-Formula (axiom-ren i id-ren)
-
-ren-list-mem : ∀ {C Γ Δ Hyp} {Φ : Formula C Γ} (r : ren Γ Δ) → Hyp ∋ Φ → (map (ren-Formula r) Hyp) ∋ (ren-Formula r Φ)
-ren-list-mem {Φ = Φ} r here = here
-ren-list-mem {Φ = Φ} r (there is-in) = there (ren-list-mem r is-in)
 
 Hyp-weaken-l-lemma-ren : ∀ {Γ Δ C} {Hyp : List (Formula C Γ)} (r : ren Γ Δ) →
   weaken-l (map (ren-Formula r) Hyp) ≡ map (ren-Formula (extend-ren r)) (weaken-l Hyp)

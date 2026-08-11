@@ -1,7 +1,7 @@
 open import Data.Empty renaming (⊥ to 𝟘) public
 open import Data.Nat using (ℕ ; suc) public
 open import Data.Fin using (Fin ; zero ; suc) public
-open import Data.List hiding (all) renaming (_∷_ to _∷l_) public
+open import Data.List hiding (all) renaming (_∷_ to _∷l_ ; _++_ to _++l_) public
 
 Ctx = ℕ
 Var = Fin
@@ -70,7 +70,10 @@ inj-formula (all φ) = all (inj-formula φ)
 inj-formula (exists φ) = exists (inj-formula φ)
 
 _∷_ : {X : Set} → List X → X → List X
-_∷_ tl h = h ∷l tl
+tl ∷ h = h ∷l tl
+
+_++_ : {X : Set} → List X → List X → List X
+l ++ l' = l' ++l l
 
 data _∋_ {X : Set} : List X → X → Set where
   here : ∀ {x xs} → (xs ∷ x) ∋ x
