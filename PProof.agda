@@ -259,7 +259,7 @@ all-lemma : ∀ {T C Γ} {Hyp} {Φ : Formula C (extend Γ)} →
   Proof T Hyp Φ
 all-lemma p =
   transport-Proof
-    ren-zero-extend-ctx-id-Formula
+    ren₀-zero-extend-ren-suc-inv-Formula
     (all-e (svar zero) p)
 
 all-cong : ∀ {T C Γ} {Hyp} {Φ Φ' : Formula C (extend Γ)} →
@@ -286,7 +286,7 @@ exists-lemma : ∀ {T C Γ} {Hyp} {Φ : Formula C (extend Γ)} →
 exists-lemma p =
   exists-i
     (svar zero)
-    (transport-Proof (sym ren-zero-extend-ctx-id-Formula) p)
+    (transport-Proof (sym ren₀-zero-extend-ren-suc-inv-Formula) p)
 
 exists-cong : ∀ {T C Γ} {Hyp} {Φ Φ' : Formula C (extend Γ)} →
   Proof T (weaken-l Hyp) (Φ ⇔ Φ') →
@@ -312,11 +312,23 @@ conservation-equiv {x = x} =
     (⇒-i
       (exists-e (Hyp-ax here)
       (transport-Proof
-        suc-var-extend-suc-is-suc-ren-var
+        lemma
         (≈-e (∧-e-l (Hyp-ax here))
           (transport-Proof
-            (sym ren-zero-extend-ctx-id-Formula)
+            (sym ren₀-zero-extend-ren-suc-inv-Formula)
             (∧-e-r (Hyp-ax here)))))))
+  where
+    lemma : ∀ {C Γ} {x : Var Γ} {Φ : Formula C (extend Γ)} →
+      ren-Formula (ren₀ (suc x)) (ren-Formula (extend-ren suc) Φ) ≡ ren-Formula suc (ren-Formula (ren₀ x) Φ)
+    lemma {Φ = Φ} =
+      trans
+        (ren-comp-Formula _ _)
+        (trans
+          (cong (λ r → ren-Formula r Φ) lemma')
+          (sym (ren-comp-Formula _ _)))
+      where
+        lemma' : ∀ {Γ} {x : Var Γ} → ren₀ (suc x) ∘ extend-ren suc ≡ suc ∘ (ren₀ x)
+        lemma' = fun-ext λ {zero → refl ; (suc x) → refl}
 
 axiom-ren :
   ∀ {T Γ} (i : thy-idx T) {Hyp}
@@ -341,7 +353,7 @@ axiom-exact {T = T} i {Hyp = Hyp} = ≡-subst (λ Ξ → Proof T Hyp Ξ) id-ren-
 Hyp-weaken-l-lemma-ren : ∀ {Γ Δ C} {Hyp : List (Formula C Γ)} (r : ren Γ Δ) →
   weaken-l (map (ren-Formula r) Hyp) ≡ map (ren-Formula (extend-ren r)) (weaken-l Hyp)
 Hyp-weaken-l-lemma-ren {Hyp = []} r = refl
-Hyp-weaken-l-lemma-ren {Hyp = Φ ∷l Hyp} r = cong₂ _∷l_ (sym (renaming-suc-commute-Formula r)) (Hyp-weaken-l-lemma-ren r)
+Hyp-weaken-l-lemma-ren {Hyp = Φ ∷l Hyp} r = cong₂ _∷l_ (sym (extend-ren-r-suc-lemma-Formula r)) (Hyp-weaken-l-lemma-ren r)
 
 ren-Proof : ∀ {T C Γ Δ Hyp} {Φ : Formula C Γ} (r : ren Γ Δ) → Proof T Hyp Φ → Proof T (map (ren-Formula r) Hyp) (ren-Formula r Φ)
 ren-Proof {T = T} {Hyp = Hyp} r (axiom i σ r') =
@@ -370,7 +382,7 @@ ren-Proof r (exists-e p p') =
     (transport-Proof-Hyp
       (cong₂ _∷_ (sym (Hyp-weaken-l-lemma-ren r)) refl)
       (transport-Proof
-        (renaming-suc-commute-Formula r)
+        (extend-ren-r-suc-lemma-Formula r)
         (ren-Proof (extend-ren r) p')))
 ren-Proof r (all-e t p) = transport-Proof (ren-term-subst-lemma {t = t} r) (all-e (ren-term r t) (ren-Proof r p))
 ren-Proof r (≈-e {Φ = Φ} {t = t} {u = u} eq p) =
@@ -378,7 +390,7 @@ ren-Proof r (≈-e {Φ = Φ} {t = t} {u = u} eq p) =
     (ren-term-subst-lemma {t = u} {Φ = Φ} r)
     (≈-e
       (transport-Proof
-        (cong₂ _≈_ (inj-term-ren-commute r) (inj-term-ren-commute r))
+        (cong₂ _≈_ (ren-inj-term r) (ren-inj-term r))
         (ren-Proof r eq))
       (transport-Proof
         (sym (ren-term-subst-lemma {t = t} r))
@@ -390,7 +402,7 @@ Subst-list-mem σ (there is-in) = there (Subst-list-mem σ is-in)
 
 Hyp-weaken-l-lemma-Subst : ∀ {C D Γ Hyp} (σ : Subst Γ C D) → map (Subst-Formula (extend-Subst σ)) (weaken-l Hyp) ≡ weaken-l (map (Subst-Formula σ) Hyp)
 Hyp-weaken-l-lemma-Subst {Hyp = []} σ = refl
-Hyp-weaken-l-lemma-Subst {Hyp = Φ ∷l Hyp} σ = cong₂ _∷l_ (extend-Subst-suc-suc-Subst σ) (Hyp-weaken-l-lemma-Subst σ)
+Hyp-weaken-l-lemma-Subst {Hyp = Φ ∷l Hyp} σ = cong₂ _∷l_ (extend-Subst-suc-lemma σ) (Hyp-weaken-l-lemma-Subst σ)
 
 Subst-Proof : ∀ {T C D Γ Hyp} {Φ : Formula C Γ} (σ : Subst Γ C D) → Proof T Hyp Φ → Proof T (map (Subst-Formula σ) Hyp) (Subst-Formula σ Φ)
 Subst-Proof σ (axiom i σ' r) = transport-Proof (sym (Subst-comp-Formula σ' σ)) (axiom i (σ ∘c σ') r)
@@ -413,7 +425,7 @@ Subst-Proof σ (exists-e p p') =
     (transport-Proof-Hyp
       (cong₂ _∷_ (Hyp-weaken-l-lemma-Subst σ) refl)
       (transport-Proof
-        (extend-Subst-suc-suc-Subst σ)
+        (extend-Subst-suc-lemma σ)
         (Subst-Proof (extend-Subst σ) p')))
 Subst-Proof σ (all-e t p) = transport-Proof (subst-term-extend-Subst-Formula {t = t} σ) (all-e t (Subst-Proof σ p))
 Subst-Proof σ (≈-e {Φ = Φ} {t = t} {u = u} eq p) =
@@ -421,7 +433,7 @@ Subst-Proof σ (≈-e {Φ = Φ} {t = t} {u = u} eq p) =
     (subst-term-extend-Subst-Formula {t = u} {Φ = Φ} σ)
     (≈-e
       (transport-Proof
-        (cong₂ _≈_ (Subst-term-id {t = t} σ) (Subst-term-id {t = u} σ))
+        (cong₂ _≈_ (Subst-inj-term-eq {t = t} σ) (Subst-inj-term-eq {t = u} σ))
         (Subst-Proof σ eq))
       (transport-Proof
         (sym (subst-term-extend-Subst-Formula {t = t} σ))
@@ -434,5 +446,5 @@ eq-to-⇔ : ∀ {Γ C T Hyp} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof T Hy
 eq-to-⇔ refl = ⇔-refl
 
 ⇔-∈-subst : ∀ {Γ} {Hyp} {Φ : Formula₀ (extend Γ)} →
-  Proof CT Hyp (svar zero ∈ (class (extend-Formula-ctx Φ)) ⇔ (extend-Formula-ctx Φ) [ svar zero ]F)
-⇔-∈-subst {Γ = Γ} {Φ = Φ} = axiom-exact (set∈class 𝟘 (extend Γ) zero (extend-Formula-ctx Φ))
+  Proof CT Hyp (svar zero ∈ (class (extend-ren-suc-Formula Φ)) ⇔ (extend-ren-suc-Formula Φ) [ svar zero ]F)
+⇔-∈-subst {Γ = Γ} {Φ = Φ} = axiom-exact (set∈class 𝟘 (extend Γ) zero (extend-ren-suc-Formula Φ))

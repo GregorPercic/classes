@@ -23,10 +23,10 @@ inj-list-mem {φ = φ} (there is-in) = there (inj-list-mem is-in)
 
 inj-formula-l-lemma : ∀ {C Γ} {hyp : List (formula Γ)} → inj-formula-l {C = C} (Proof.weaken-l hyp) ≡ PProof.weaken-l (inj-formula-l hyp)
 inj-formula-l-lemma {hyp = []} = refl
-inj-formula-l-lemma {hyp = φ ∷l hyp} = cong₂ _∷l_ (sym (subst-inj-commute-ren suc)) inj-formula-l-lemma
+inj-formula-l-lemma {hyp = φ ∷l hyp} = cong₂ _∷l_ (sym (ren-inj-formula suc)) inj-formula-l-lemma
 
 inj-formula-term-subst : ∀ {C Γ} {t : term Γ} {φ : formula (extend Γ)} → inj-formula {C = C} (φ [ t ]f) ≡ (inj-formula φ [ t ]F)
-inj-formula-term-subst {t = svar x} = sym (subst-inj-commute-ren (ren₀ x))
+inj-formula-term-subst {t = svar x} = sym (ren-inj-formula (ren₀ x))
 
 conservation-⇐ : ∀ {C Γ hyp} {φ : formula Γ} → proof ST hyp φ → Proof CT {C = C} (inj-formula-l hyp) (inj-formula φ)
 conservation-⇐ (axiom ext r) = all-i (all-i (axiom class≈class (λ {A → svar (suc zero) ; B → svar zero}) empty-ren))
@@ -49,7 +49,7 @@ conservation-⇐ (exists-e p p') =
     (transport-Proof-Hyp
       (cong₂ _∷_ inj-formula-l-lemma refl)
       (transport-Proof
-        (sym (subst-inj-commute-ren suc))
+        (sym (ren-inj-formula suc))
         (conservation-⇐ p')))
 conservation-⇐ (all-e t p) = transport-Proof (sym (inj-formula-term-subst {t = t})) (all-e t (conservation-⇐ p))
 conservation-⇐ (≈-e {t = t} {u = u} p p') =
@@ -90,7 +90,7 @@ subst-extend-elim-eq {Φ = Φ} =
     (trans
       (cong elim (ren-comp-Formula {Φ = Φ} (extend-ren suc) (ren₀ zero)))
       (trans
-        (cong (λ r → elim (ren-Formula r Φ)) ren-zero-extend-ctx-id)
+        (cong (λ r → elim (ren-Formula r Φ)) ren₀-zero-extend-ren-suc-inv)
         (cong elim (id-ren-Formula {Φ = Φ}))))
 
 conservation-⇒-lemma : ∀ {Γ Hyp} {Φ : Formula₀ Γ} → Proof CT {𝟘} {Γ} Hyp Φ → proof ST {Γ} (map elim Hyp) (elim Φ)

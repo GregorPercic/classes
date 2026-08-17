@@ -139,8 +139,20 @@ conservation-equiv {x = x} =
     (⇒-i
       (exists-e (hyp-ax here)
       (transport-proof
-        suc-var-extend-suc-is-suc-ren-var-formula
+        lemma
         (≈-e (∧-e-l (hyp-ax here))
           (transport-proof
-            (sym ren-zero-extend-ctx-id-formula)
+            (sym ren₀-zero-extend-ren-suc-inv-formula)
             (∧-e-r (hyp-ax here)))))))
+  where
+    lemma : ∀ {Γ} {x : Var Γ} {φ : formula (extend Γ)} →
+      ren-formula (ren₀ (suc x)) (ren-formula (extend-ren suc) φ) ≡ ren-formula suc (ren-formula (ren₀ x) φ)
+    lemma {φ = φ} =
+      trans
+        (ren-comp-formula _ _)
+        (trans
+          (cong (λ r → ren-formula r φ) lemma')
+          (sym (ren-comp-formula _ _)))
+      where
+        lemma' : ∀ {Γ} {x : Var Γ} → ren₀ (suc x) ∘ extend-ren suc ≡ suc ∘ (ren₀ x)
+        lemma' = fun-ext λ {zero → refl ; (suc x) → refl}
