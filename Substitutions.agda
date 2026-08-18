@@ -93,7 +93,7 @@ _[_]f : ∀ {Γ} → formula (extend Γ) → term Γ → formula Γ
 _[_]F : ∀ {C Γ} → Formula C (extend Γ) → term Γ → Formula C Γ
 Φ [ svar x ]F = ren-Formula (ren₀ x) Φ
 
--- Functions for extending terms and formulas
+-- Functions for extending formulas
 
 extend-ren-suc-formula : ∀ {Γ} → formula (extend Γ) → formula (extend (extend Γ))
 extend-ren-suc-formula = ren-formula (extend-ren suc)
@@ -241,10 +241,6 @@ ren-inj-formula {φ = φ ⇒ ψ} r = cong₂ _⇒_ (ren-inj-formula r) (ren-inj-
 ren-inj-formula {φ = φ ⇔ ψ} r = cong₂ _⇔_ (ren-inj-formula r) (ren-inj-formula r)
 ren-inj-formula {φ = all φ} r = cong all (ren-inj-formula (extend-ren r))
 ren-inj-formula {φ = exists φ} r = cong exists (ren-inj-formula (extend-ren r))
-
-ren₀-inj-formula : ∀ {C Γ} {φ : formula (extend Γ)} {x : Var Γ} →
-  ren-Formula {C = C} (ren₀ x) (inj-formula φ) ≡ inj-formula (ren-formula (ren₀ x) φ)
-ren₀-inj-formula {x = x} = ren-inj-formula (ren₀ x)
 
 ren₀-zero-extend-ren-suc-inv : ∀ {Γ} → (ren₀ {Γ = extend Γ} zero) ∘ (extend-ren suc) ≡ id-ren
 ren₀-zero-extend-ren-suc-inv = fun-ext λ {zero → refl ; (suc x) → refl}

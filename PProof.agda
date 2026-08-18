@@ -354,7 +354,8 @@ axiom-exact {Thy = Thy} i {Hyp = Hyp} = ≡-subst (λ Ξ → Proof Thy Hyp Ξ) i
 Hyp-weaken-l-lemma-ren : ∀ {Γ Δ C} {Hyp : List (Formula C Γ)} (r : ren Γ Δ) →
   weaken-l (map (ren-Formula r) Hyp) ≡ map (ren-Formula (extend-ren r)) (weaken-l Hyp)
 Hyp-weaken-l-lemma-ren {Hyp = []} r = refl
-Hyp-weaken-l-lemma-ren {Hyp = Φ ∷l Hyp} r = cong₂ _∷l_ (sym (extend-ren-r-suc-lemma-Formula r)) (Hyp-weaken-l-lemma-ren r)
+Hyp-weaken-l-lemma-ren {Hyp = Φ ∷l Hyp} r =
+  cong₂ _∷l_ (sym (extend-ren-r-suc-lemma-Formula r)) (Hyp-weaken-l-lemma-ren r)
 
 ren-Proof : ∀ {Thy C Γ Δ Hyp} {Φ : Formula C Γ} (r : ren Γ Δ) →
   Proof Thy Hyp Φ → Proof Thy (map (ren-Formula r) Hyp) (ren-Formula r Φ)

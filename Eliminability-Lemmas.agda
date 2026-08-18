@@ -24,9 +24,6 @@ extend-suc-lemma : ∀ {Γ Δ} (r : ren Γ Δ) →
   (extend-ren suc) ∘ (extend-ren r) ≡ (extend-ren (extend-ren r)) ∘ (extend-ren suc)
 extend-suc-lemma r = fun-ext λ {zero → refl ; (suc x) → refl}
 
-subst-zero-eq-Formula : ∀ {C Γ} {Φ : Formula C (extend Γ)} → (extend-ren-suc-Formula Φ) [ svar zero ]F ≡ Φ
-subst-zero-eq-Formula {Φ = Φ} = ren₀-zero-extend-ren-suc-inv-Formula
-
 elim-ren : ∀ {Γ Δ} {Φ : Formula₀ Γ} (r : ren Γ Δ) →
   elim (ren-Formula r Φ) ≡ ren-formula r (elim Φ)
 elim-ren {Φ = ⊥} r = refl
@@ -92,3 +89,13 @@ elim-ren {Φ = exists Φ} r = cong exists (elim-ren {Φ = Φ} (extend-ren r))
 
 elim-extend-suc : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → elim (extend-ren-suc-Formula Φ) ≡ extend-ren-suc-formula (elim Φ)
 elim-extend-suc {Φ = Φ} = elim-ren {Φ = Φ} (extend-ren suc)
+
+
+-- Non-elim lemmas
+
+subst-zero-eq-Formula : ∀ {C Γ} {Φ : Formula C (extend Γ)} → (extend-ren-suc-Formula Φ) [ svar zero ]F ≡ Φ
+subst-zero-eq-Formula {Φ = Φ} = ren₀-zero-extend-ren-suc-inv-Formula
+
+ren₀-inj-formula : ∀ {C Γ} {φ : formula (extend Γ)} {x : Var Γ} →
+  ren-Formula {C = C} (ren₀ x) (inj-formula φ) ≡ inj-formula (ren-formula (ren₀ x) φ)
+ren₀-inj-formula {x = x} = ren-inj-formula (ren₀ x)
