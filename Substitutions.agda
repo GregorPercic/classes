@@ -1,8 +1,8 @@
-open import Syntax
-
 open import Relation.Binary.PropositionalEquality public
   using (_≡_ ; refl ; cong ; cong₂ ; trans ; sym) renaming (subst to ≡-subst ; subst₂ to ≡-subst₂)
 open import Function.Base public using (_∘_)
+
+open import Syntax
 
 
 -- Renamings of set variables

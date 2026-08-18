@@ -4,6 +4,6 @@ import Theory
 import TTheory
 import Proof
 import PProof
+import Eliminability-Lemmas
 import Eliminability
 import Conservation
-import Eliminability-Lemmas

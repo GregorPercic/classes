@@ -2,13 +2,14 @@ open import Syntax
 open import Substitutions
 open import Theory
 
+
 weaken : ∀ {Γ} → formula Γ → formula (extend Γ)
 weaken = ren-formula suc
 
 weaken-l : ∀ {Γ} → List (formula Γ) → List (formula (extend Γ))
 weaken-l l = map weaken l
 
-data proof (thy : theory) : {Γ : Ctx} → List (formula Γ) → formula Γ → Set₂ where
+data proof (thy : theory) : {Γ : Ctx} → List (formula Γ) → formula Γ → Set where
   axiom :
     ∀ {Γ} {hyp} (i : thy-idx thy)
     (r : ren (thy-ctx thy i) Γ) →
@@ -106,7 +107,7 @@ data proof (thy : theory) : {Γ : Ctx} → List (formula Γ) → formula Γ → 
   
   -- source: https://link.springer.com/book/10.1007/978-1-4419-1221-3 ; p. 92
 
-  ≈-e : ∀ {Γ hyp} {φ : formula (extend Γ)} {t u : term Γ} →
+  ≈-e : ∀ {Γ} {hyp} {φ : formula (extend Γ)} {t u : term Γ} →
     proof thy hyp (t ≈ u) →
     proof thy hyp (φ [ t ]f) →
     ------------------------

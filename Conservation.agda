@@ -1,4 +1,5 @@
-open import Data.Product hiding (map)
+open import Data.Product using (_×_ ; _,_)
+open import Agda.Primitive using (_⊔_)
 
 open import Syntax
 open import Substitutions
@@ -6,29 +7,26 @@ open import Proof
 open import PProof
 open import Theory
 open import TTheory
-open import Eliminability
+open import Eliminability-Lemmas
 
-open import Agda.Primitive
-
-
-_↔_ : ∀ {ℓ ℓ'} → Set ℓ → Set ℓ' → Set (ℓ ⊔ ℓ')
-ty ↔ ty' = (ty → ty') × (ty' → ty)
 
 inj-formula-l : ∀ {C Γ} → List (formula Γ) → List (Formula C Γ)
 inj-formula-l = map inj-formula
 
 inj-list-mem : ∀ {C Γ hyp} {φ : formula Γ} → hyp ∋ φ → map (inj-formula {C = C}) hyp ∋ inj-formula φ
-inj-list-mem {φ = φ} here = here
-inj-list-mem {φ = φ} (there is-in) = there (inj-list-mem is-in)
+inj-list-mem here = here
+inj-list-mem (there is-in) = there (inj-list-mem is-in)
 
-inj-formula-l-lemma : ∀ {C Γ} {hyp : List (formula Γ)} → inj-formula-l {C = C} (Proof.weaken-l hyp) ≡ PProof.weaken-l (inj-formula-l hyp)
+inj-formula-l-lemma : ∀ {C Γ} {hyp : List (formula Γ)} →
+  inj-formula-l {C = C} (Proof.weaken-l hyp) ≡ PProof.weaken-l (inj-formula-l hyp)
 inj-formula-l-lemma {hyp = []} = refl
 inj-formula-l-lemma {hyp = φ ∷l hyp} = cong₂ _∷l_ (sym (ren-inj-formula suc)) inj-formula-l-lemma
 
-inj-formula-term-subst : ∀ {C Γ} {t : term Γ} {φ : formula (extend Γ)} → inj-formula {C = C} (φ [ t ]f) ≡ (inj-formula φ [ t ]F)
-inj-formula-term-subst {t = svar x} = sym (ren-inj-formula (ren₀ x))
+inj-formula-subst : ∀ {C Γ} {t : term Γ} {φ : formula (extend Γ)} →
+  inj-formula {C = C} (φ [ t ]f) ≡ (inj-formula φ [ t ]F)
+inj-formula-subst {t = svar x} = sym (ren-inj-formula (ren₀ x))
 
-conservation-⇐ : ∀ {C Γ hyp} {φ : formula Γ} → proof ST hyp φ → Proof CT {C = C} (inj-formula-l hyp) (inj-formula φ)
+conservation-⇐ : ∀ {C Γ hyp} {φ : formula Γ} → proof ST hyp φ → Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ)
 conservation-⇐ (axiom ext r) = all-i (all-i (axiom class≈class (λ {A → svar (suc zero) ; B → svar zero}) empty-ren))
 conservation-⇐ (hyp-ax is-in) = Hyp-ax (inj-list-mem is-in)
 conservation-⇐ ≈-refl = ≈-refl
@@ -36,7 +34,7 @@ conservation-⇐ (∧-i p p') = ∧-i (conservation-⇐ p) (conservation-⇐ p')
 conservation-⇐ (⇒-i p) = ⇒-i (conservation-⇐ p)
 conservation-⇐ (⇔-i p p') = ⇔-i (conservation-⇐ p) (conservation-⇐ p')
 conservation-⇐ (all-i p) = all-i (transport-Proof-Hyp inj-formula-l-lemma (conservation-⇐ p))
-conservation-⇐ (exists-i t p) = exists-i t (transport-Proof (inj-formula-term-subst {t = t}) (conservation-⇐ p))
+conservation-⇐ (exists-i t p) = exists-i t (transport-Proof (inj-formula-subst {t = t}) (conservation-⇐ p))
 conservation-⇐ (⊥-e p) = ⊥-e (conservation-⇐ p)
 conservation-⇐ (∧-e-l p) = ∧-e-l (conservation-⇐ p)
 conservation-⇐ (∧-e-r p) = ∧-e-r (conservation-⇐ p)
@@ -51,14 +49,14 @@ conservation-⇐ (exists-e p p') =
       (transport-Proof
         (sym (ren-inj-formula suc))
         (conservation-⇐ p')))
-conservation-⇐ (all-e t p) = transport-Proof (sym (inj-formula-term-subst {t = t})) (all-e t (conservation-⇐ p))
+conservation-⇐ (all-e t p) = transport-Proof (sym (inj-formula-subst {t = t})) (all-e t (conservation-⇐ p))
 conservation-⇐ (≈-e {t = t} {u = u} p p') =
   transport-Proof
-    (sym (inj-formula-term-subst {t = u}))
+    (sym (inj-formula-subst {t = u}))
     (≈-e
       (conservation-⇐ p)
       (transport-Proof
-        (inj-formula-term-subst {t = t})
+        (inj-formula-subst {t = t})
         (conservation-⇐ p')))
 
 elim-list-mem : ∀ {Γ Hyp} {Φ : Formula₀ Γ} → Hyp ∋ Φ → map elim Hyp ∋ elim Φ
@@ -67,10 +65,10 @@ elim-list-mem (there is-in) = there (elim-list-mem is-in)
 
 Hyp-elim-lemma : ∀ {Γ} {Hyp : List (Formula₀ Γ)} → map elim (PProof.weaken-l Hyp) ≡ Proof.weaken-l (map elim Hyp)
 Hyp-elim-lemma {Hyp = []} = refl
-Hyp-elim-lemma {Hyp = Φ ∷l Hyp} = cong₂ _∷l_ (elim-renamings-commute {Φ = Φ} suc) Hyp-elim-lemma
+Hyp-elim-lemma {Hyp = Φ ∷l Hyp} = cong₂ _∷l_ (elim-ren {Φ = Φ} suc) Hyp-elim-lemma
 
-elim-subst-term-commute : ∀ {Γ} {t : term Γ} {Φ : Formula₀ (extend Γ)} → elim (Φ [ t ]F) ≡ (elim Φ [ t ]f)
-elim-subst-term-commute {t = svar x} {Φ = Φ} = elim-renamings-commute {Φ = Φ} (ren₀ x)
+elim-subst : ∀ {Γ} {t : term Γ} {Φ : Formula₀ (extend Γ)} → elim (Φ [ t ]F) ≡ (elim Φ [ t ]f)
+elim-subst {t = svar x} {Φ = Φ} = elim-ren {Φ = Φ} (ren₀ x)
 
 elim-inj-inv : ∀ {Γ} {φ : formula Γ} → elim (inj-formula φ) ≡ φ
 elim-inj-inv {φ = ⊥} = refl
@@ -82,11 +80,11 @@ elim-inj-inv {φ = φ ⇔ ψ} = cong₂ _⇔_ elim-inj-inv elim-inj-inv
 elim-inj-inv {φ = all φ} = cong all elim-inj-inv
 elim-inj-inv {φ = exists φ} = cong exists elim-inj-inv
 
-subst-extend-elim-eq : ∀ {Γ} {Φ : Formula₀ (extend Γ)} →
+subst-elim-extend-ren-eq : ∀ {Γ} {Φ : Formula₀ (extend Γ)} →
   ren-formula (ren₀ zero) (elim (ren-Formula (extend-ren suc) Φ)) ≡ elim Φ
-subst-extend-elim-eq {Φ = Φ} =
+subst-elim-extend-ren-eq {Φ = Φ} =
   trans
-    (sym (elim-renamings-commute {Φ = ren-Formula (extend-ren suc) Φ} (ren₀ zero)))
+    (sym (elim-ren {Φ = ren-Formula (extend-ren suc) Φ} (ren₀ zero)))
     (trans
       (cong elim (ren-comp-Formula {Φ = Φ} (extend-ren suc) (ren₀ zero)))
       (trans
@@ -103,7 +101,7 @@ conservation-⇒-lemma (axiom (set∈class C Γ y Ψ) σ r) =
       elim (Subst-Formula σ (ren-Formula r (ren-Formula (ren₀ y) Φ)))
     lemma {Φ = Φ} {r = r} {σ = σ} =
       trans
-        (sym (elim-subst-term-commute {Φ = Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Φ)}))
+        (sym (elim-subst {Φ = Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Φ)}))
         (cong elim
           (trans
             (ren₀-under-extend-Subst-Formula {Φ = ren-Formula (extend-ren r) Φ} σ)
@@ -115,37 +113,37 @@ conservation-⇒-lemma (axiom class∈class σ r) with σ A | σ B
 ... | svar x  | class Φ =
   transport-proof
     (cong (λ Ξ → (ren-formula (ren₀ x) (elim Φ) ⇔ exists (svar zero ≈ svar (suc x) ∧ Ξ)))
-      (sym (subst-extend-elim-eq {Φ = Φ})))
+      (sym (subst-elim-extend-ren-eq {Φ = Φ})))
     Proof.conservation-equiv
 ... | class Φ | svar x =
   Proof.eq-to-⇔
     (cong
       (λ Ξ → exists (all (svar zero ∈ svar (suc zero) ⇔ Ξ) ∧ svar zero ∈ svar (suc x)))
-      (sym (elim-renamings-commute {Φ = Φ} (extend-ren suc))))
+      (sym (elim-ren {Φ = Φ} (extend-ren suc))))
 ... | class Φ | class Ψ =
   Proof.eq-to-⇔
     (cong₂
       (λ Ξ Ξ' → exists (all (svar zero ∈ svar (suc zero) ⇔ Ξ) ∧ Ξ'))
-      (sym (elim-renamings-commute {Φ = Φ} (extend-ren suc)))
-      (sym (subst-extend-elim-eq {Φ = Ψ})))
+      (sym (elim-ren {Φ = Φ} (extend-ren suc)))
+      (sym (subst-elim-extend-ren-eq {Φ = Ψ})))
 conservation-⇒-lemma {Γ = Γ} (axiom class≈class σ r) with σ A | σ B
 ... | svar x  | svar y = all-e (svar y) (all-e (svar x) (axiom ext empty-ren))
 ... | svar x  | class Φ =
   Proof.eq-to-⇔
     (cong
       (λ Ξ → all (svar zero ∈ svar (suc x) ⇔ Ξ))
-      (sym (subst-extend-elim-eq {Φ = Φ})))
+      (sym (subst-elim-extend-ren-eq {Φ = Φ})))
 ... | class Φ | svar x =
   Proof.eq-to-⇔
     (cong
       (λ Ξ → all (Ξ ⇔ svar zero ∈ svar (suc x)))
-      (sym (subst-extend-elim-eq {Φ = Φ})))
+      (sym (subst-elim-extend-ren-eq {Φ = Φ})))
 ... | class Φ | class Ψ =
   Proof.eq-to-⇔
     (cong₂
       (λ Ξ Ξ' → all (Ξ ⇔ Ξ'))
-      (sym (subst-extend-elim-eq {Φ = Φ}))
-      (sym (subst-extend-elim-eq {Φ = Ψ})))
+      (sym (subst-elim-extend-ren-eq {Φ = Φ}))
+      (sym (subst-elim-extend-ren-eq {Φ = Ψ})))
 conservation-⇒-lemma (Hyp-ax is-in) = hyp-ax (elim-list-mem is-in)
 conservation-⇒-lemma (≈-refl {t = svar x}) = ≈-refl
 conservation-⇒-lemma (≈-refl {t = class Φ}) = all-⇔-refl
@@ -153,7 +151,7 @@ conservation-⇒-lemma (∧-i p p') = ∧-i (conservation-⇒-lemma p) (conserva
 conservation-⇒-lemma (⇒-i p) = ⇒-i (conservation-⇒-lemma p)
 conservation-⇒-lemma (⇔-i p p') = ⇔-i (conservation-⇒-lemma p) (conservation-⇒-lemma p')
 conservation-⇒-lemma (all-i p) = all-i (transport-proof-hyp Hyp-elim-lemma (conservation-⇒-lemma p))
-conservation-⇒-lemma (exists-i t p) = exists-i t (transport-proof (elim-subst-term-commute {t = t}) (conservation-⇒-lemma p))
+conservation-⇒-lemma (exists-i t p) = exists-i t (transport-proof (elim-subst {t = t}) (conservation-⇒-lemma p))
 conservation-⇒-lemma (⊥-e p) = ⊥-e (conservation-⇒-lemma p)
 conservation-⇒-lemma (∧-e-l p) = ∧-e-l (conservation-⇒-lemma p)
 conservation-⇒-lemma (∧-e-r p) = ∧-e-r (conservation-⇒-lemma p)
@@ -166,18 +164,18 @@ conservation-⇒-lemma (exists-e {Ψ = Ψ} p p') =
     (transport-proof-hyp
       (cong₂ _∷_ Hyp-elim-lemma refl)
       (transport-proof
-        (elim-renamings-commute {Φ = Ψ} suc)
+        (elim-ren {Φ = Ψ} suc)
         (conservation-⇒-lemma p')))
-conservation-⇒-lemma (all-e t p) = transport-proof (sym (elim-subst-term-commute {t = t})) (all-e t (conservation-⇒-lemma p))
+conservation-⇒-lemma (all-e t p) = transport-proof (sym (elim-subst {t = t})) (all-e t (conservation-⇒-lemma p))
 conservation-⇒-lemma (≈-e {t = t} {u = u} eq p) =
   transport-proof
-    (sym (elim-subst-term-commute {t = u}))
+    (sym (elim-subst {t = u}))
     (≈-e {t = t} {u = u}
       (transport-proof
         elim-inj-inv
         (conservation-⇒-lemma eq))
       (transport-proof
-        (elim-subst-term-commute {t = t})
+        (elim-subst {t = t})
         (conservation-⇒-lemma p)))
 
 magic-Subst : ∀ {C D Γ} → Subst Γ C D
@@ -213,6 +211,12 @@ conservation-⇒ {hyp = hyp} {φ = φ} p =
 
 
 -- The Conservation theorem
+
+_↔_ : ∀ {ℓ ℓ'} → Set ℓ → Set ℓ' → Set (ℓ ⊔ ℓ')
+ty ↔ ty' = (ty → ty') × (ty' → ty)
+
+-- The (⇐) direction of the theorem can also seen as a kind of Soundness theorem.
+-- In that case, the (⇒) direction alone is the Conservation theorem proper.
 
 conservation : ∀ {C Γ hyp} (φ : formula Γ) → Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ) ↔ proof ST {Γ} hyp φ
 conservation φ = conservation-⇒ , conservation-⇐
