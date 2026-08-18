@@ -85,6 +85,9 @@ _∘c_ : ∀ {C D E Γ} → Subst Γ D E → Subst Γ C D → Subst Γ C E
 empty-Subst : ∀ {C Γ} → Subst Γ 𝟘 C
 empty-Subst ()
 
+Subst-const : ∀ {C D Γ} → (t : Term D Γ) → Subst Γ C D
+Subst-const t _ = t
+
 -- Simple subtitutions for small and big formulas
 
 _[_]f : ∀ {Γ} → formula (extend Γ) → term Γ → formula Γ

@@ -451,9 +451,33 @@ subst-dist-⇔ : ∀ {Thy C Γ Hyp} {Φ Ψ : Formula C (extend Γ)} (x : Var Γ)
   Proof Thy (weaken-l Hyp) (Φ ⇔ Ψ) → Proof Thy Hyp (Φ [ svar x ]F ⇔ Ψ [ svar x ]F)
 subst-dist-⇔ x p = all-e (svar x) (all-i p) -- ren-Proof (ren₀ x) p
 
-eq-to-⇔ : ∀ {Γ C Thy Hyp} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof Thy Hyp (Φ ⇔ Ψ)
+eq-to-⇔ : ∀ {Thy C Γ Hyp} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof Thy Hyp (Φ ⇔ Ψ)
 eq-to-⇔ refl = ⇔-refl
 
 ⇔-∈-subst : ∀ {Γ} {Hyp} {Φ : Formula₀ (extend Γ)} →
   Proof CT Hyp (svar zero ∈ (class (extend-ren-suc-Formula Φ)) ⇔ (extend-ren-suc-Formula Φ) [ svar zero ]F)
 ⇔-∈-subst {Γ = Γ} {Φ = Φ} = axiom-exact (set∈class 𝟘 (extend Γ) zero (extend-ren-suc-Formula Φ))
+
+wk-from-empty : ∀ {Thy C Γ Hyp} {Φ : Formula C Γ} →
+  Proof Thy [] Φ →
+  ----------------
+  Proof Thy Hyp Φ
+wk-from-empty {Hyp = []} p = p 
+wk-from-empty {Hyp = Ψ ∷l Hyp} p = wk (wk-from-empty p)
+
+-- Basic inference rules for equality are derivable in CT
+
+≈-refl-deriv-cvar : ∀ {Γ Hyp} →
+  ---------------------
+  Proof CT {two-classes} {Γ} Hyp (cvar A ≈ cvar A)
+≈-refl-deriv-cvar =
+  ⇒-e
+    (⇔-e-rl
+      (axiom class≈class (λ {A → cvar A ; B → cvar A}) empty-ren))
+    (all-i ⇔-refl)
+
+≈-refl-deriv : ∀ {C Γ Hyp} {t : Term C Γ} →
+  ---------------------
+  Proof CT Hyp (t ≈ t)
+≈-refl-deriv {t = t} =
+  wk-from-empty (Subst-Proof (Subst-const t) ≈-refl-deriv-cvar)
