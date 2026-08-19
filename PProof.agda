@@ -465,19 +465,53 @@ wk-from-empty : ∀ {Thy C Γ Hyp} {Φ : Formula C Γ} →
 wk-from-empty {Hyp = []} p = p 
 wk-from-empty {Hyp = Ψ ∷l Hyp} p = wk (wk-from-empty p)
 
--- Basic inference rules for equality are derivable in CT
-
-≈-refl-deriv-cvar : ∀ {Γ Hyp} →
-  ---------------------
-  Proof CT {two-classes} {Γ} Hyp (cvar A ≈ cvar A)
-≈-refl-deriv-cvar =
-  ⇒-e
-    (⇔-e-rl
-      (axiom class≈class (λ {A → cvar A ; B → cvar A}) empty-ren))
-    (all-i ⇔-refl)
+-- Basic inference rules for equality are derivable in CT (not used in main proofs)
 
 ≈-refl-deriv : ∀ {C Γ Hyp} {t : Term C Γ} →
-  ---------------------
+  --------------------
   Proof CT Hyp (t ≈ t)
 ≈-refl-deriv {t = t} =
-  wk-from-empty (Subst-Proof (Subst-const t) ≈-refl-deriv-cvar)
+  ⇒-e
+    (⇔-e-rl (axiom class≈class (Subst-const t) empty-ren))
+    (all-i ⇔-refl)
+
+all-⇔-sym : ∀ {Thy C Γ Hyp} {Φ Ψ : Formula C (extend Γ)} →
+  Proof Thy Hyp (all (Φ ⇔ Ψ)) →
+  ------------------------------
+  Proof Thy Hyp (all (Ψ ⇔ Φ))
+all-⇔-sym p = all-i (⇔-sym (all-lemma (ren-Proof suc p)))
+
+≈-sym-deriv : ∀ {C Γ Hyp} {t u : Term C Γ} →
+  Proof CT Hyp (t ≈ u) →
+  ----------------------
+  Proof CT Hyp (u ≈ t)
+≈-sym-deriv {t = t} {u = u} p =
+  ⇒-e
+    (⇔-e-rl (axiom class≈class (λ {A → u ; B → t}) empty-ren))
+    (all-⇔-sym
+      (⇒-e
+        (⇔-e-lr (axiom class≈class (λ {A → t ; B → u}) empty-ren))
+        p))
+
+all-⇔-trans : ∀ {Thy C Γ Hyp} {Φ Φ' Φ'' : Formula C (extend Γ)} →
+  Proof Thy Hyp (all (Φ ⇔ Φ')) →
+  Proof Thy Hyp (all (Φ' ⇔ Φ'')) →
+  --------------------------------
+  Proof Thy Hyp (all (Φ ⇔ Φ''))
+all-⇔-trans p p' =
+  all-i
+    (⇔-trans
+      (all-lemma (ren-Proof suc p))
+      (all-lemma (ren-Proof suc p')))
+
+≈-trans-deriv : ∀ {C Γ Hyp} {t u v : Term C Γ} →
+  Proof CT Hyp (t ≈ u) →
+  Proof CT Hyp (u ≈ v) →
+  ----------------------
+  Proof CT Hyp (t ≈ v)
+≈-trans-deriv {t = t} {u = u} {v = v} p p' =
+  ⇒-e
+    (⇔-e-rl (axiom class≈class (λ {A → t ; B → v}) empty-ren))
+    (all-⇔-trans
+      (⇒-e (⇔-e-lr (axiom class≈class (λ {A → t ; B → u}) empty-ren)) p)
+      (⇒-e (⇔-e-lr (axiom class≈class (λ {A → u ; B → v}) empty-ren)) p'))
