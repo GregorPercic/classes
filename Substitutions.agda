@@ -55,7 +55,7 @@ empty-ren ()
 -- Substitutions from class variables to class terms
 
 Subst : Ctx → Set → Set → Set
-Subst Γ C D  = C → Term D Γ
+Subst Γ C D = C → Term D Γ
 
 comp-rS : ∀ {C D Γ Δ} → ren Γ Δ → Subst Γ C D → Subst Δ C D
 comp-rS r σ c = ren-Term r (σ c)
@@ -88,7 +88,7 @@ empty-Subst ()
 Subst-const : ∀ {C D Γ} → (t : Term D Γ) → Subst Γ C D
 Subst-const t _ = t
 
--- Simple subtitutions for small and big formulas
+-- Simple subtitutions for set formulas and class formulas
 
 _[_]f : ∀ {Γ} → formula (extend Γ) → term Γ → formula Γ
 φ [ svar x ]f = ren-formula (ren₀ x) φ
@@ -107,7 +107,7 @@ extend-ren-suc-Formula = ren-Formula (extend-ren suc)
 -- Function extensionality
 
 postulate
-  fun-ext : {A B : Set} {f g : A → B} → (∀ x → f x ≡ g x) → f ≡ g
+  fun-ext : {A B : Set} {f g : A → B} → ((x : A) → f x ≡ g x) → f ≡ g
 
 -- Lemmas involving renamings and class variable substitutions
 

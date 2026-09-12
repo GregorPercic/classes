@@ -9,113 +9,115 @@ weaken-l : ∀ {C Γ} → List (Formula C Γ) → List (Formula C (extend Γ))
 weaken-l l = map weaken l
 
 data Proof (Thy : Theory) {C : Set} : {Γ : Ctx} → List (Formula C Γ) → Formula C Γ → Set₁ where
+  -- Non-structural rules
+  
   axiom :
     ∀ {Γ} {Hyp} (i : thy-idx Thy)
     (σ : Subst Γ (thy-cls Thy i) C)
     (r : ren (thy-ctx Thy i) Γ) →
+    ---------------------------------------------------------------
     Proof Thy Hyp (Subst-Formula σ (ren-Formula r (thy-axi Thy i)))
 
   -- source: https://www.enseignement.polytechnique.fr/informatique/MPRI/2-7-1/2024/notes.pdf ; p. 15
 
-  -- Non-structural rules
-
   Hyp-ax : ∀ {Γ} {Hyp} {Φ : Formula C Γ} →
     Hyp ∋ Φ →
-    -------------
+    ---------------
     Proof Thy Hyp Φ
 
   lem : ∀ {Γ} {Hyp} {Φ : Formula C Γ} →
-    ----------------------------------
+    -----------------------------------
     Proof Thy Hyp (((Φ ⇒ ⊥) ⇒ ⊥) ⇒ Φ)
 
   -- Introduction rules
 
   ≈-i : ∀ {Γ} {Hyp} {t : Term C Γ} →
-    -------------------
+    --------------------------------
     Proof Thy Hyp (t ≈ t)
 
   ∧-i : ∀ {Γ} {Hyp} {Φ Ψ : Formula C Γ} →
     Proof Thy Hyp Φ →
     Proof Thy Hyp Ψ →
-    --------------------
+    ---------------------
     Proof Thy Hyp (Φ ∧ Ψ)
 
   ⇒-i : ∀ {Γ} {Hyp} {Φ Ψ : Formula C Γ} →
     Proof Thy (Hyp ∷ Φ) Ψ →
-    --------------------
+    -----------------------
     Proof Thy Hyp (Φ ⇒ Ψ)
 
   ⇔-i : ∀ {Γ} {Hyp} {Φ Ψ : Formula C Γ} →
     Proof Thy Hyp (Φ ⇒ Ψ) →
     Proof Thy Hyp (Ψ ⇒ Φ) →
-    ----------------------
+    ------------------------
     Proof Thy Hyp (Φ ⇔ Ψ)
 
   all-i :
     ∀ {Γ} {Hyp} {Φ : Formula C (extend Γ)} →
     Proof Thy (weaken-l Hyp) Φ →
-    ---------------
+    ----------------------------
     Proof Thy Hyp (all Φ)
 
   exists-i :
     ∀ {Γ} {Hyp} {Φ : Formula C (extend Γ)} →
     (t : term Γ) →
     Proof Thy Hyp (Φ [ t ]F) →
-    ------------------------
+    --------------------------
     Proof Thy Hyp (exists Φ)
   
   -- Elimination rules
 
   ⊥-e : ∀ {Γ} {Hyp} {Φ : Formula C Γ} →
     Proof Thy Hyp ⊥ →
-    ---------------
+    -----------------
     Proof Thy Hyp Φ
+
+  -- source for ≈-e: https://link.springer.com/book/10.1007/978-1-4419-1221-3 ; p. 92
+
+  ≈-e : ∀ {Γ Hyp} {Φ : Formula C (extend Γ)} {t u : term Γ} →
+    Proof Thy Hyp (inj-term t ≈ inj-term u) →
+    Proof Thy Hyp (Φ [ t ]F) →
+    --------------------------
+    Proof Thy Hyp (Φ [ u ]F)
 
   ∧-e-l : ∀ {Γ} {Hyp} {Φ Ψ : Formula C Γ} →
     Proof Thy Hyp (Φ ∧ Ψ) →
-    ---------------------
+    -----------------------
     Proof Thy Hyp Φ
 
   ∧-e-r : ∀ {Γ} {Hyp} {Φ Ψ : Formula C Γ} →
     Proof Thy Hyp (Φ ∧ Ψ) →
-    ---------------------
+    -----------------------
     Proof Thy Hyp Ψ
 
   ⇒-e : ∀ {Γ} {Hyp} {Φ Ψ : Formula C Γ} →
     Proof Thy Hyp (Φ ⇒ Ψ) →
     Proof Thy Hyp Φ →
-    ---------------
+    ------------------------
     Proof Thy Hyp Ψ
 
   ⇔-e-lr : ∀ {Γ} {Hyp} {Φ Ψ : Formula C Γ} →
     Proof Thy Hyp (Φ ⇔ Ψ) →
-    ----------------------
+    ------------------------
     Proof Thy Hyp (Φ ⇒ Ψ)
 
   ⇔-e-rl : ∀ {Γ} {Hyp} {Φ Ψ : Formula C Γ} →
     Proof Thy Hyp (Φ ⇔ Ψ) →
-    ----------------------
+    ------------------------
     Proof Thy Hyp (Ψ ⇒ Φ)
-
-  exists-e : ∀ {Γ} {Hyp} {Φ : Formula C (extend Γ)} {Ψ : Formula C Γ} →
-    Proof Thy Hyp (exists Φ) →
-    Proof Thy (weaken-l Hyp ∷ Φ) (weaken Ψ) →
-    ---------------------------------------
-    Proof Thy Hyp Ψ
 
   all-e : ∀ {Γ} {Hyp} {Φ : Formula C (extend Γ)} →
     (t : term Γ) →
     Proof Thy Hyp (all Φ) →
-    ----------------------
-    Proof Thy Hyp (Φ [ t ]F)
-  
-  -- source: https://link.springer.com/book/10.1007/978-1-4419-1221-3 ; p. 92
-
-  ≈-e : ∀ {Γ Hyp} {Φ : Formula C (extend Γ)} {t u : term Γ} →
-    Proof Thy Hyp (inj-term t ≈ inj-term u) →
-    Proof Thy Hyp (Φ [ t ]F) →
     ------------------------
-    Proof Thy Hyp (Φ [ u ]F)
+    Proof Thy Hyp (Φ [ t ]F)
+
+  exists-e : ∀ {Γ} {Hyp} {Φ : Formula C (extend Γ)} {Ψ : Formula C Γ} →
+    Proof Thy Hyp (exists Φ) →
+    Proof Thy (weaken-l Hyp ∷ Φ) (weaken Ψ) →
+    -----------------------------------------
+    Proof Thy Hyp Ψ
+
 
 transport-Proof : ∀ {Thy C Γ Hyp} {Φ Ψ : Formula C Γ} → (Φ ≡ Ψ) → Proof Thy Hyp Φ → Proof Thy Hyp Ψ
 transport-Proof {Thy = Thy} {Hyp = Hyp} e p = ≡-subst (λ Ξ → Proof Thy Hyp Ξ) e p

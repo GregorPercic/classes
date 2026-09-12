@@ -7,7 +7,7 @@ record Theory : Set₂ where
     thy-idx : Set₁ -- axiom names
     thy-cls : thy-idx → Set -- class variables appearing in the axiom
     thy-ctx : thy-idx → Ctx -- set variables appearing in the axiom
-    thy-axi : ∀ (i : thy-idx) → Formula (thy-cls i) (thy-ctx i)
+    thy-axi : (i : thy-idx) → Formula (thy-cls i) (thy-ctx i)
 
 open Theory public
 
@@ -15,7 +15,7 @@ open Theory public
 -- The theory of classes
 
 data idxCT : Set₁ where
-  -- the axiom schema y ∈ { x | Φ } ⇔ Φ[y/x]
+  -- the axiom schema y ∈ {x | Φ} ⇔ Φ[y/x]
   set∈class : (C : Set) (Γ : Ctx) (y : Var Γ) (Φ : Formula C (extend Γ)) → idxCT
   -- the axiom A ∈ B ⇔ ∃x.(x = A ∧ x ∈ B)
   class∈class : idxCT
