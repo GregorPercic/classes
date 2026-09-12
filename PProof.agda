@@ -337,6 +337,28 @@ conservation-equiv {x = x} =
         lemma' : ∀ {Γ} {x : Var Γ} → ren₀ (suc x) ∘ extend-ren suc ≡ suc ∘ (ren₀ x)
         lemma' = fun-ext λ {zero → refl ; (suc x) → refl}
 
+⇔-cong-Proof : ∀ {Thy C Γ Hyp} {Φ Φ' Ψ Ψ' : Formula C Γ} →
+  Proof Thy Hyp (Φ ⇔ Φ') →
+  Proof Thy Hyp (Ψ ⇔ Ψ') →
+  Proof Thy Hyp (Φ ⇔ Ψ) →
+  -------------------------
+  Proof Thy Hyp (Φ' ⇔ Ψ')
+⇔-cong-Proof eq eq' p =
+  ⇔-trans (⇔-sym eq) (⇔-trans p eq')
+
+⇔-all-cong-Proof : ∀ {Thy C Γ Hyp} {Φ Φ' : Formula C Γ} {Ψ Ψ' Ξ Ξ' : Formula C (extend Γ)} → 
+  Proof Thy Hyp (Φ ⇔ Φ') →
+  Proof Thy (weaken-l Hyp) (Ψ ⇔ Ψ') →
+  Proof Thy (weaken-l Hyp) (Ξ ⇔ Ξ') →
+  Proof Thy Hyp (Φ ⇔ all (Ψ ⇔ Ξ)) →
+  -----------------------------------
+  Proof Thy Hyp (Φ' ⇔ all (Ψ' ⇔ Ξ'))
+⇔-all-cong-Proof eq eq' eq'' p =
+  ⇔-cong-Proof
+    eq
+    (all-cong (⇔-cong eq' eq''))
+    p
+
 axiom-ren :
   ∀ {Thy Γ} (i : thy-idx Thy) {Hyp}
   (r : ren (thy-ctx Thy i) Γ) →
