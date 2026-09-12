@@ -30,7 +30,7 @@ data proof (thy : theory) : {Γ : Ctx} → List (formula Γ) → formula Γ → 
 
   -- Introduction rules
 
-  ≈-refl : ∀ {Γ} {hyp} {t : term Γ} →
+  ≈-i : ∀ {Γ} {hyp} {t : term Γ} →
     -------------------
     proof thy hyp (t ≈ t)
 
@@ -140,7 +140,7 @@ conservation-equiv : ∀ {thy Γ hyp} {x : Var Γ} {φ : formula (extend Γ)} �
   proof thy hyp (φ [ svar x ]f ⇔ exists (svar zero ≈ svar (suc x) ∧ φ))
 conservation-equiv {x = x} =
   ⇔-i
-    (⇒-i (exists-i (svar x) (∧-i ≈-refl (hyp-ax here))))
+    (⇒-i (exists-i (svar x) (∧-i ≈-i (hyp-ax here))))
     (⇒-i
       (exists-e (hyp-ax here)
       (transport-proof

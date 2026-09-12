@@ -30,7 +30,7 @@ data Proof (Thy : Theory) {C : Set} : {Γ : Ctx} → List (Formula C Γ) → For
 
   -- Introduction rules
 
-  ≈-refl : ∀ {Γ} {Hyp} {t : Term C Γ} →
+  ≈-i : ∀ {Γ} {Hyp} {t : Term C Γ} →
     -------------------
     Proof Thy Hyp (t ≈ t)
 
@@ -152,7 +152,7 @@ general-wk :
 general-wk sub (axiom i σ r) = axiom i σ r
 general-wk sub (Hyp-ax is-in) = Hyp-ax (sub is-in)
 general-wk sub lem = lem
-general-wk sub ≈-refl = ≈-refl
+general-wk sub ≈-i = ≈-i
 general-wk sub (∧-i p p') = ∧-i (general-wk sub p) (general-wk sub p')
 general-wk sub (⇒-i p) = ⇒-i (general-wk (⊆-Hyp-both-step sub) p)
 general-wk sub (⇔-i p p') = ⇔-i (general-wk sub p) (general-wk sub p')
@@ -313,7 +313,7 @@ conservation-equiv : ∀ {Thy C Γ Hyp} {x : Var Γ} {Φ : Formula C (extend Γ)
   Proof Thy Hyp (Φ [ svar x ]F ⇔ exists (svar zero ≈ svar (suc x) ∧ Φ))
 conservation-equiv {x = x} =
   ⇔-i
-    (⇒-i (exists-i (svar x) (∧-i ≈-refl (Hyp-ax here))))
+    (⇒-i (exists-i (svar x) (∧-i ≈-i (Hyp-ax here))))
     (⇒-i
       (exists-e (Hyp-ax here)
       (transport-Proof
@@ -374,7 +374,7 @@ ren-Proof {Thy = Thy} {Hyp = Hyp} r (axiom i σ r') =
 ren-Proof r (⊥-e p) = ⊥-e (ren-Proof r p)
 ren-Proof r (Hyp-ax is-in) = Hyp-ax (ren-list-mem r is-in)
 ren-Proof r lem = lem
-ren-Proof r ≈-refl = ≈-refl
+ren-Proof r ≈-i = ≈-i
 ren-Proof r (∧-i p p') = ∧-i (ren-Proof r p) (ren-Proof r p')
 ren-Proof r (⇒-i p) = ⇒-i (ren-Proof r p)
 ren-Proof r (⇔-i p p') = ⇔-i (ren-Proof r p) (ren-Proof r p')
@@ -420,7 +420,7 @@ Subst-Proof : ∀ {Thy C D Γ Hyp} {Φ : Formula C Γ} (σ : Subst Γ C D) →
 Subst-Proof σ (axiom i σ' r) = transport-Proof (sym (Subst-comp-Formula σ' σ)) (axiom i (σ ∘c σ') r)
 Subst-Proof σ (Hyp-ax is-in) = Hyp-ax (Subst-list-mem σ is-in)
 Subst-Proof σ lem = lem
-Subst-Proof σ ≈-refl = ≈-refl
+Subst-Proof σ ≈-i = ≈-i
 Subst-Proof σ (∧-i p p') = ∧-i (Subst-Proof σ p) (Subst-Proof σ p')
 Subst-Proof σ (⇒-i p) = ⇒-i (Subst-Proof σ p)
 Subst-Proof σ (⇔-i p p') = ⇔-i (Subst-Proof σ p) (Subst-Proof σ p')
@@ -474,10 +474,10 @@ wk-from-empty {Hyp = Ψ ∷l Hyp} p = wk (wk-from-empty p)
 
 -- Basic inference rules for equality are derivable in CT (not used in main proofs)
 
-≈-refl-deriv : ∀ {C Γ Hyp} {t : Term C Γ} →
+≈-i-deriv : ∀ {C Γ Hyp} {t : Term C Γ} →
   --------------------
   Proof CT Hyp (t ≈ t)
-≈-refl-deriv {t = t} =
+≈-i-deriv {t = t} =
   ⇒-e
     (⇔-e-rl (axiom class≈class (Subst-const t) empty-ren))
     (all-i ⇔-refl)
