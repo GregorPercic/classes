@@ -11,6 +11,7 @@ open import Conservation-Lemmas
 conservation-⇐ : ∀ {C Γ hyp} {φ : formula Γ} → proof ST hyp φ → Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ)
 conservation-⇐ (axiom ext r) = all-i (all-i (axiom class≈class (λ {A → svar (suc zero) ; B → svar zero}) empty-ren))
 conservation-⇐ (hyp-ax is-in) = Hyp-ax (inj-list-mem is-in)
+conservation-⇐ lem = lem
 conservation-⇐ ≈-refl = ≈-refl
 conservation-⇐ (∧-i p p') = ∧-i (conservation-⇐ p) (conservation-⇐ p')
 conservation-⇐ (⇒-i p) = ⇒-i (conservation-⇐ p)
@@ -95,6 +96,7 @@ conservation-⇒-lemma {Γ = Γ} (axiom class≈class σ r) with σ A | σ B
       (sym (subst-elim-extend-ren-eq {Φ = Φ}))
       (sym (subst-elim-extend-ren-eq {Φ = Ψ})))
 conservation-⇒-lemma (Hyp-ax is-in) = hyp-ax (elim-list-mem is-in)
+conservation-⇒-lemma lem = lem
 conservation-⇒-lemma (≈-refl {t = svar x}) = ≈-refl
 conservation-⇒-lemma (≈-refl {t = class Φ}) = all-⇔-refl
 conservation-⇒-lemma (∧-i p p') = ∧-i (conservation-⇒-lemma p) (conservation-⇒-lemma p')

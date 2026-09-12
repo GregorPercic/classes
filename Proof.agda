@@ -10,6 +10,8 @@ weaken-l : ∀ {Γ} → List (formula Γ) → List (formula (extend Γ))
 weaken-l l = map weaken l
 
 data proof (thy : theory) : {Γ : Ctx} → List (formula Γ) → formula Γ → Set where
+  -- Non-structural rules
+
   axiom :
     ∀ {Γ} {hyp} (i : thy-idx thy)
     (r : ren (thy-ctx thy i) Γ) →
@@ -17,12 +19,14 @@ data proof (thy : theory) : {Γ : Ctx} → List (formula Γ) → formula Γ → 
 
   -- source: https://www.enseignement.polytechnique.fr/informatique/MPRI/2-7-1/2024/notes.pdf ; p. 15
 
-  -- Non-structural rules
-
   hyp-ax : ∀ {Γ} {hyp} {φ : formula Γ} →
     hyp ∋ φ →
     -------------
     proof thy hyp φ
+
+  lem : ∀ {Γ} {hyp} {φ : formula Γ} →
+    ----------------------------------
+    proof thy hyp (((φ ⇒ ⊥) ⇒ ⊥) ⇒ φ)
 
   -- Introduction rules
 

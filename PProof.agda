@@ -24,6 +24,10 @@ data Proof (Thy : Theory) {C : Set} : {Γ : Ctx} → List (Formula C Γ) → For
     -------------
     Proof Thy Hyp Φ
 
+  lem : ∀ {Γ} {Hyp} {Φ : Formula C Γ} →
+    ----------------------------------
+    Proof Thy Hyp (((Φ ⇒ ⊥) ⇒ ⊥) ⇒ Φ)
+
   -- Introduction rules
 
   ≈-refl : ∀ {Γ} {Hyp} {t : Term C Γ} →
@@ -147,6 +151,7 @@ general-wk :
   → Proof Thy Hyp' Φ
 general-wk sub (axiom i σ r) = axiom i σ r
 general-wk sub (Hyp-ax is-in) = Hyp-ax (sub is-in)
+general-wk sub lem = lem
 general-wk sub ≈-refl = ≈-refl
 general-wk sub (∧-i p p') = ∧-i (general-wk sub p) (general-wk sub p')
 general-wk sub (⇒-i p) = ⇒-i (general-wk (⊆-Hyp-both-step sub) p)
@@ -368,6 +373,7 @@ ren-Proof {Thy = Thy} {Hyp = Hyp} r (axiom i σ r') =
     (axiom i (comp-rS r σ) (r ∘ r'))
 ren-Proof r (⊥-e p) = ⊥-e (ren-Proof r p)
 ren-Proof r (Hyp-ax is-in) = Hyp-ax (ren-list-mem r is-in)
+ren-Proof r lem = lem
 ren-Proof r ≈-refl = ≈-refl
 ren-Proof r (∧-i p p') = ∧-i (ren-Proof r p) (ren-Proof r p')
 ren-Proof r (⇒-i p) = ⇒-i (ren-Proof r p)
@@ -413,6 +419,7 @@ Subst-Proof : ∀ {Thy C D Γ Hyp} {Φ : Formula C Γ} (σ : Subst Γ C D) →
   Proof Thy Hyp Φ → Proof Thy (map (Subst-Formula σ) Hyp) (Subst-Formula σ Φ)
 Subst-Proof σ (axiom i σ' r) = transport-Proof (sym (Subst-comp-Formula σ' σ)) (axiom i (σ ∘c σ') r)
 Subst-Proof σ (Hyp-ax is-in) = Hyp-ax (Subst-list-mem σ is-in)
+Subst-Proof σ lem = lem
 Subst-Proof σ ≈-refl = ≈-refl
 Subst-Proof σ (∧-i p p') = ∧-i (Subst-Proof σ p) (Subst-Proof σ p')
 Subst-Proof σ (⇒-i p) = ⇒-i (Subst-Proof σ p)
