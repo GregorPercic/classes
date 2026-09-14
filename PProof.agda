@@ -149,7 +149,7 @@ general-wk :
   ∀ {Thy C Γ} {Hyp Hyp'} {Φ : Formula C Γ}
   → Hyp ⊆-Hyp Hyp'
   → Proof Thy Hyp Φ
-  -----------------
+  ------------------
   → Proof Thy Hyp' Φ
 general-wk sub (axiom i σ r) = axiom i σ r
 general-wk sub (Hyp-ax is-in) = Hyp-ax (sub is-in)
@@ -173,7 +173,7 @@ general-wk sub (≈-e p p') = ≈-e (general-wk sub p) (general-wk sub p')
 wk :
   ∀ {Thy C Γ} {Hyp} {Φ Ψ : Formula C Γ}
   → Proof Thy Hyp Φ
-  ---------------------
+  -----------------------
   → Proof Thy (Hyp ∷ Ψ) Φ
 wk = general-wk (λ is-in → there is-in)
 
@@ -204,7 +204,7 @@ wk = general-wk (λ is-in → there is-in)
 ⇒-trans : ∀ {Thy C Γ} {Hyp} {Φ Φ' Φ'' : Formula C Γ} →
   Proof Thy Hyp (Φ ⇒ Φ') →
   Proof Thy Hyp (Φ' ⇒ Φ'') →
-  ---------------------
+  ---------------------------
   Proof Thy Hyp (Φ ⇒ Φ'')
 ⇒-trans p p' =
   ⇒-i
@@ -346,30 +346,43 @@ conservation-equiv {x = x} =
 ⇔-cong-Proof eq eq' p =
   ⇔-trans (⇔-sym eq) (⇔-trans p eq')
 
-⇔-all-cong-Proof : ∀ {Thy C Γ Hyp} {Φ Φ' : Formula C Γ} {Ψ Ψ' Ξ Ξ' : Formula C (extend Γ)} → 
+⇔-all-⇔-cong-Proof : ∀ {Thy C Γ Hyp} {Φ Φ' : Formula C Γ} {Ψ Ψ' Ξ Ξ' : Formula C (extend Γ)} → 
   Proof Thy Hyp (Φ ⇔ Φ') →
   Proof Thy (weaken-l Hyp) (Ψ ⇔ Ψ') →
   Proof Thy (weaken-l Hyp) (Ξ ⇔ Ξ') →
   Proof Thy Hyp (Φ ⇔ all (Ψ ⇔ Ξ)) →
   -----------------------------------
   Proof Thy Hyp (Φ' ⇔ all (Ψ' ⇔ Ξ'))
-⇔-all-cong-Proof eq eq' eq'' p =
+⇔-all-⇔-cong-Proof eq eq' eq'' p =
   ⇔-cong-Proof
     eq
     (all-cong (⇔-cong eq' eq''))
     p
 
+⇔-exists-∧-cong-Proof : ∀ {Thy C Γ Hyp} {Φ Φ' : Formula C Γ} {Ψ Ψ' Ξ Ξ' : Formula C (extend Γ)} → 
+  Proof Thy Hyp (Φ ⇔ Φ') →
+  Proof Thy (weaken-l Hyp) (Ψ ⇔ Ψ') →
+  Proof Thy (weaken-l Hyp) (Ξ ⇔ Ξ') →
+  Proof Thy Hyp (Φ ⇔ exists (Ψ ∧ Ξ)) →
+  -----------------------------------
+  Proof Thy Hyp (Φ' ⇔ exists (Ψ' ∧ Ξ'))
+⇔-exists-∧-cong-Proof eq eq' eq'' p =
+  ⇔-cong-Proof
+    eq
+    (exists-cong (∧-cong eq' eq''))
+    p
+
 axiom-ren :
   ∀ {Thy Γ} (i : thy-idx Thy) {Hyp}
   (r : ren (thy-ctx Thy i) Γ) →
-  -------------------------------------------------------------------
+  -------------------------------------------------------------------------
   Proof Thy {C = thy-cls Thy i} {Γ = Γ} Hyp (ren-Formula r (thy-axi Thy i))
-axiom-ren {Thy = Thy} i {Hyp = Hyp} r = ≡-subst (λ Ξ → Proof Thy Hyp Ξ) (id-Subst-Formula) (axiom i id-Subst r)
+axiom-ren {Thy = Thy} i {Hyp = Hyp} r = transport-Proof (id-Subst-Formula) (axiom i id-Subst r)
 
 axiom-Subst :
   ∀ {Thy C} (i : thy-idx Thy) {Hyp}
   (σ : Subst (thy-ctx Thy i) (thy-cls Thy i) C) →
-  ---------------------------------------------------------------------
+  ---------------------------------------------------------------------------
   Proof Thy {C = C} {Γ = thy-ctx Thy i} Hyp (Subst-Formula σ (thy-axi Thy i))
 axiom-Subst {Thy = Thy} i {Hyp = Hyp} σ =
   ≡-subst (λ Ξ → Proof Thy Hyp (Subst-Formula σ Ξ)) id-ren-Formula (axiom i σ id-ren)
@@ -378,7 +391,7 @@ axiom-exact :
   ∀ {Thy} (i : thy-idx Thy) {Hyp} →
   -----------------------
   Proof Thy Hyp (thy-axi Thy i)
-axiom-exact {Thy = Thy} i {Hyp = Hyp} = ≡-subst (λ Ξ → Proof Thy Hyp Ξ) id-ren-Formula (axiom-ren i id-ren)
+axiom-exact {Thy = Thy} i {Hyp = Hyp} = transport-Proof id-ren-Formula (axiom-ren i id-ren)
 
 Hyp-weaken-l-lemma-ren : ∀ {Γ Δ C} {Hyp : List (Formula C Γ)} (r : ren Γ Δ) →
   weaken-l (map (ren-Formula r) Hyp) ≡ map (ren-Formula (extend-ren r)) (weaken-l Hyp)
@@ -485,9 +498,9 @@ subst-dist-⇔ x p = all-e (svar x) (all-i p) -- ren-Proof (ren₀ x) p
 eq-to-⇔ : ∀ {Thy C Γ Hyp} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof Thy Hyp (Φ ⇔ Ψ)
 eq-to-⇔ refl = ⇔-refl
 
-⇔-∈-subst : ∀ {Γ} {Hyp} {Φ : Formula₀ (extend Γ)} →
-  Proof CT Hyp (svar zero ∈ (class (extend-ren-suc-Formula Φ)) ⇔ (extend-ren-suc-Formula Φ) [ svar zero ]F)
-⇔-∈-subst {Γ = Γ} {Φ = Φ} = axiom-exact (set∈class 𝟘 (extend Γ) zero (extend-ren-suc-Formula Φ))
+⇔-∈-subst : ∀ {Γ} {Hyp} {Φ : Formula₀ (extend Γ)} → (y : Var (extend Γ)) →
+  Proof CT Hyp (svar y ∈ class (extend-ren-suc-Formula Φ) ⇔ (extend-ren-suc-Formula Φ) [ svar y ]F)
+⇔-∈-subst {Γ = Γ} {Φ = Φ} y = axiom-exact (set∈class 𝟘 (extend Γ) y (extend-ren-suc-Formula Φ))
 
 wk-from-empty : ∀ {Thy C Γ Hyp} {Φ : Formula C Γ} →
   Proof Thy [] Φ →
