@@ -46,11 +46,8 @@ elim-ren {Φ = svar x ∈ class Φ} r =
           (λ Ξ → ren-formula (ren₀ (r x)) Ξ)
           (elim-ren {Φ = Φ} (extend-ren r)))
         (ren-comp-formula (extend-ren r) (ren₀ (r x))))
-      (cong (λ r' → ren-formula r' (elim Φ)) (lemma r)))
+      (cong (λ r' → ren-formula r' (elim Φ)) (ren₀-under-extend-comp-eq r)))
     (sym (ren-comp-formula (ren₀ x) r))
-  where
-    lemma : ∀ {Γ Δ} {x : Var Γ} (r : ren Γ Δ) → ren₀ (r x) ∘ (extend-ren r) ≡ r ∘ (ren₀ x)
-    lemma r = fun-ext λ {zero → refl ; (suc x) → refl}
 elim-ren {Φ = class Φ ∈ svar x} r =
   cong (λ Ξ → exists (all (svar zero ∈ svar (suc zero) ⇔ Ξ) ∧ svar zero ∈ svar (suc (r x)))) lemma
   where
@@ -86,9 +83,6 @@ elim-ren {Φ = Φ ⇒ Ψ} r = cong₂ _⇒_ (elim-ren {Φ = Φ} r) (elim-ren {Φ
 elim-ren {Φ = Φ ⇔ Ψ} r = cong₂ _⇔_ (elim-ren {Φ = Φ} r) (elim-ren {Φ = Ψ} r)
 elim-ren {Φ = all Φ} r = cong all (elim-ren {Φ = Φ} (extend-ren r))
 elim-ren {Φ = exists Φ} r = cong exists (elim-ren {Φ = Φ} (extend-ren r))
-
-elim-extend-suc : ∀ {Γ} {Φ : Formula₀ (extend Γ)} → elim (extend-ren-suc-Formula Φ) ≡ extend-ren-suc-formula (elim Φ)
-elim-extend-suc {Φ = Φ} = elim-ren {Φ = Φ} (extend-ren suc)
 
 
 -- Non-elim lemmas

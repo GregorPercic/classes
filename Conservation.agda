@@ -53,7 +53,8 @@ conservation-⇒-lemma (axiom (set∈class C Γ y Ψ) σ r) =
     lemma {Φ = Φ} {r = r} {σ = σ} =
       trans
         (sym (elim-subst {Φ = Subst-Formula (extend-Subst σ) (ren-Formula (extend-ren r) Φ)}))
-        (cong elim
+        (cong
+          elim
           (trans
             (ren₀-under-extend-Subst-Formula {Φ = ren-Formula (extend-ren r) Φ} σ)
             (cong
@@ -130,7 +131,7 @@ conservation-⇒-lemma (≈-e {t = t} {u = u} eq p) =
         (elim-subst {t = t})
         (conservation-⇒-lemma p)))
 
-conservation-⇒ : ∀ {C Γ hyp} {φ : formula Γ} → Proof CT {C = C} (inj-formula-l hyp) (inj-formula φ) → proof ST hyp φ
+conservation-⇒ : ∀ {C Γ hyp} {φ : formula Γ} → Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ) → proof ST {Γ} hyp φ
 conservation-⇒ {hyp = hyp} {φ = φ} p =
   transport-proof-hyp
     lemma2
@@ -149,12 +150,12 @@ conservation-⇒ {hyp = hyp} {φ = φ} p =
     lemma2 {hyp = φ ∷l hyp} = cong₂ _∷l_ lemma1 lemma2
 
 
--- The Conservation theorem
+-- The Conservation Theorem
 
 _↔_ : ∀ {ℓ ℓ'} → Set ℓ → Set ℓ' → Set (ℓ ⊔ ℓ')
 ty ↔ ty' = (ty → ty') × (ty' → ty)
 
--- The (⇐) direction of the theorem can also seen as a kind of Soundness theorem.
+-- The (⇐) direction of the theorem can also be seen as a kind of Soundness theorem.
 -- In that case, the (⇒) direction alone is the Conservation theorem proper.
 
 conservation : ∀ {C Γ hyp} (φ : formula Γ) → Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ) ↔ proof ST {Γ} hyp φ

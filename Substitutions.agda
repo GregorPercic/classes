@@ -413,16 +413,16 @@ ren-term-subst-lemma : ∀ {C Γ Δ} {t : term Γ} {Φ : Formula C (extend Γ)} 
   (ren-Formula (extend-ren r) Φ) [ ren-term r t ]F ≡ ren-Formula r (Φ [ t ]F)
 ren-term-subst-lemma {t = svar x} r = ren₀-under-extend-ren r
 
+subst-suc-eq-id-ren : ∀ {Γ} {x : Var Γ} → (ren₀ x) ∘ suc ≡ id-ren
+subst-suc-eq-id-ren = fun-ext (λ {zero → refl ; (suc y) → refl})
+
 ren₀-suc-eq-Term : ∀ {C Γ} {x : Var Γ} {t : Term C Γ} → ren-Term (ren₀ x) (ren-Term suc t) ≡ t
 ren₀-suc-eq-Term {x = x} {t = t} =
   trans
     (ren-comp-Term suc (ren₀ x))
     (trans
-      (cong (λ r' → ren-Term r' t) (lemma {x = x}))
+      (cong (λ r' → ren-Term r' t) (subst-suc-eq-id-ren {x = x}))
       id-ren-Term)
-  where
-    lemma : ∀ {Γ} {x : Var Γ} → (ren₀ x) ∘ suc ≡ id-ren
-    lemma = fun-ext (λ {zero → refl ; (suc y) → refl})
 
 ren₀-extend-Subst-eq-Subst-Formula : ∀ {C D Γ} {x : Var Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) →
   Subst-Formula (comp-rS (ren₀ x) (extend-Subst σ)) Φ ≡ Subst-Formula σ Φ

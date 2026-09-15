@@ -18,7 +18,7 @@ inj-formula-l-lemma {hyp = []} = refl
 inj-formula-l-lemma {hyp = φ ∷l hyp} = cong₂ _∷l_ (sym (ren-inj-formula suc)) inj-formula-l-lemma
 
 inj-formula-subst : ∀ {C Γ} {t : term Γ} {φ : formula (extend Γ)} →
-  inj-formula {C = C} (φ [ t ]f) ≡ (inj-formula φ [ t ]F)
+  inj-formula {C = C} (φ [ t ]f) ≡ (inj-formula φ) [ t ]F
 inj-formula-subst {t = svar x} = sym (ren-inj-formula (ren₀ x))
 
 elim-list-mem : ∀ {Γ Hyp} {Φ : Formula₀ Γ} → Hyp ∋ Φ → map elim Hyp ∋ elim Φ
@@ -29,7 +29,7 @@ Hyp-elim-lemma : ∀ {Γ} {Hyp : List (Formula₀ Γ)} → map elim (PProof.weak
 Hyp-elim-lemma {Hyp = []} = refl
 Hyp-elim-lemma {Hyp = Φ ∷l Hyp} = cong₂ _∷l_ (elim-ren {Φ = Φ} suc) Hyp-elim-lemma
 
-elim-subst : ∀ {Γ} {t : term Γ} {Φ : Formula₀ (extend Γ)} → elim (Φ [ t ]F) ≡ (elim Φ [ t ]f)
+elim-subst : ∀ {Γ} {t : term Γ} {Φ : Formula₀ (extend Γ)} → elim (Φ [ t ]F) ≡ (elim Φ) [ t ]f
 elim-subst {t = svar x} {Φ = Φ} = elim-ren {Φ = Φ} (ren₀ x)
 
 elim-inj-inv : ∀ {Γ} {φ : formula Γ} → elim (inj-formula φ) ≡ φ

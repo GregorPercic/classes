@@ -144,13 +144,15 @@ conservation-equiv {x = x} =
   ⇔-i
     (⇒-i (exists-i (svar x) (∧-i ≈-i (hyp-ax here))))
     (⇒-i
-      (exists-e (hyp-ax here)
-      (transport-proof
-        lemma
-        (≈-e (∧-e-l (hyp-ax here))
-          (transport-proof
-            (sym ren₀-zero-extend-ren-suc-inv-formula)
-            (∧-e-r (hyp-ax here)))))))
+      (exists-e
+        (hyp-ax here)
+        (transport-proof
+          lemma
+          (≈-e
+            (∧-e-l (hyp-ax here))
+            (transport-proof
+              (sym ren₀-zero-extend-ren-suc-inv-formula)
+              (∧-e-r (hyp-ax here)))))))
   where
     lemma : ∀ {Γ} {x : Var Γ} {φ : formula (extend Γ)} →
       ren-formula (ren₀ (suc x)) (ren-formula (extend-ren suc) φ) ≡ ren-formula suc (ren-formula (ren₀ x) φ)

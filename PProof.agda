@@ -493,7 +493,7 @@ Subst-Proof σ (≈-e {Φ = Φ} {t = t} {u = u} eq p) =
 
 subst-dist-⇔ : ∀ {Thy C Γ Hyp} {Φ Ψ : Formula C (extend Γ)} (x : Var Γ) →
   Proof Thy (weaken-l Hyp) (Φ ⇔ Ψ) → Proof Thy Hyp (Φ [ svar x ]F ⇔ Ψ [ svar x ]F)
-subst-dist-⇔ x p = all-e (svar x) (all-i p) -- ren-Proof (ren₀ x) p
+subst-dist-⇔ x p = all-e (svar x) (all-i p)
 
 eq-to-⇔ : ∀ {Thy C Γ Hyp} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof Thy Hyp (Φ ⇔ Ψ)
 eq-to-⇔ refl = ⇔-refl
