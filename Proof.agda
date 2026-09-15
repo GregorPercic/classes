@@ -125,20 +125,19 @@ transport-proof {thy = thy} {hyp = hyp} e p = ≡-subst (λ ξ → proof thy hyp
 transport-proof-hyp : ∀ {thy Γ hyp hyp'} {φ : formula Γ} → (hyp ≡ hyp') → proof thy hyp φ → proof thy hyp' φ
 transport-proof-hyp {thy = thy} e p = ≡-subst (λ h → proof thy h _) e p
 
-⇔-refl : ∀ {thy Γ} {Hyp} {φ : formula Γ} → proof thy Hyp (φ ⇔ φ)
+⇔-refl : ∀ {thy Γ hyp} {φ : formula Γ} → proof thy hyp (φ ⇔ φ)
 ⇔-refl =
   ⇔-i
     (⇒-i (hyp-ax here))
     (⇒-i (hyp-ax here))
 
-all-⇔-refl : ∀ {thy Γ} {Hyp} {φ : formula (extend Γ)} → proof thy Hyp (all (φ ⇔ φ))
+all-⇔-refl : ∀ {thy Γ hyp} {φ : formula (extend Γ)} → proof thy hyp (all (φ ⇔ φ))
 all-⇔-refl = all-i ⇔-refl
 
 eq-to-⇔ : ∀ {Γ thy hyp} {φ ψ : formula Γ} → φ ≡ ψ → proof thy hyp (φ ⇔ ψ)
 eq-to-⇔ refl = ⇔-refl
 
 conservation-equiv : ∀ {thy Γ hyp} {x : Var Γ} {φ : formula (extend Γ)} →
-  -------------------------------------------------------------------
   proof thy hyp (φ [ svar x ]f ⇔ exists (svar zero ≈ svar (suc x) ∧ φ))
 conservation-equiv {x = x} =
   ⇔-i

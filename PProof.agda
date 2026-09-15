@@ -185,10 +185,10 @@ wk = general-wk (λ is-in → there is-in)
     (⇒-i (Hyp-ax here))
     (⇒-i (Hyp-ax here))
 
-∧-cong : ∀ {Thy C Γ} {Hyp} {Φ Φ' Ψ Ψ' : Formula C Γ} →
+∧-cong : ∀ {Thy C Γ Hyp} {Φ Φ' Ψ Ψ' : Formula C Γ} →
   Proof Thy Hyp (Φ ⇔ Φ') →
   Proof Thy Hyp (Ψ ⇔ Ψ') →
-  -----------------------------
+  -------------------------------
   Proof Thy Hyp (Φ ∧ Ψ ⇔ Φ' ∧ Ψ')
 ∧-cong p p' =
   ⇔-i
@@ -201,7 +201,7 @@ wk = general-wk (λ is-in → there is-in)
         (⇒-e (⇔-e-rl (wk p)) (∧-e-l (Hyp-ax here)))
         (⇒-e (⇔-e-rl (wk p')) (∧-e-r (Hyp-ax here)))))
 
-⇒-trans : ∀ {Thy C Γ} {Hyp} {Φ Φ' Φ'' : Formula C Γ} →
+⇒-trans : ∀ {Thy C Γ Hyp} {Φ Φ' Φ'' : Formula C Γ} →
   Proof Thy Hyp (Φ ⇒ Φ') →
   Proof Thy Hyp (Φ' ⇒ Φ'') →
   ---------------------------
@@ -212,16 +212,16 @@ wk = general-wk (λ is-in → there is-in)
       (wk p')
       (⇒-e (wk p) (Hyp-ax here)))
 
-⇔-sym : ∀ {Thy C Γ} {Hyp} {Φ Φ' : Formula C Γ} →
+⇔-sym : ∀ {Thy C Γ Hyp} {Φ Φ' : Formula C Γ} →
   Proof Thy Hyp (Φ ⇔ Φ') →
-  ---------------------
+  -------------------------
   Proof Thy Hyp (Φ' ⇔ Φ)
 ⇔-sym p = ⇔-i (⇔-e-rl p) (⇔-e-lr p)
 
-⇔-trans : ∀ {Thy C Γ} {Hyp} {Φ Φ' Φ'' : Formula C Γ} →
+⇔-trans : ∀ {Thy C Γ Hyp} {Φ Φ' Φ'' : Formula C Γ} →
   Proof Thy Hyp (Φ ⇔ Φ') →
   Proof Thy Hyp (Φ' ⇔ Φ'') →
-  ---------------------
+  ---------------------------
   Proof Thy Hyp (Φ ⇔ Φ'')
 ⇔-trans p p' =
   ⇔-i
@@ -231,7 +231,7 @@ wk = general-wk (λ is-in → there is-in)
 ⇒-cong : ∀ {Thy C Γ} {Hyp} {Φ Φ' Ψ Ψ' : Formula C Γ} →
   Proof Thy Hyp (Φ ⇔ Φ') →
   Proof Thy Hyp (Ψ ⇔ Ψ') →
-  ----------------------------------
+  ------------------------------------
   Proof Thy Hyp ((Φ ⇒ Ψ) ⇔ (Φ' ⇒ Ψ'))
 ⇒-cong p p' =
   ⇔-i
@@ -244,10 +244,10 @@ wk = general-wk (λ is-in → there is-in)
         (wk (⇔-e-lr p))
         (⇒-trans (Hyp-ax here) (wk (⇔-e-rl p')))))
 
-⇔-cong : ∀ {Thy C Γ} {Hyp} {Φ Φ' Ψ Ψ' : Formula C Γ} →
+⇔-cong : ∀ {Thy C Γ Hyp} {Φ Φ' Ψ Ψ' : Formula C Γ} →
   Proof Thy Hyp (Φ ⇔ Φ') →
   Proof Thy Hyp (Ψ ⇔ Ψ') →
-  ----------------------------------
+  ------------------------------------
   Proof Thy Hyp ((Φ ⇔ Ψ) ⇔ (Φ' ⇔ Ψ'))
 ⇔-cong p p' =
   ⇔-i
@@ -260,18 +260,18 @@ wk = general-wk (λ is-in → there is-in)
         (⇔-trans (wk p) (Hyp-ax here))
         (wk (⇔-sym p'))))
 
-all-lemma : ∀ {Thy C Γ} {Hyp} {Φ : Formula C (extend Γ)} →
+all-lemma : ∀ {Thy C Γ Hyp} {Φ : Formula C (extend Γ)} →
   Proof Thy Hyp (weaken (all Φ)) →
-  ------------------------------
+  --------------------------------
   Proof Thy Hyp Φ
 all-lemma p =
   transport-Proof
     ren₀-zero-extend-ren-suc-inv-Formula
     (all-e (svar zero) p)
 
-all-cong : ∀ {Thy C Γ} {Hyp} {Φ Φ' : Formula C (extend Γ)} →
+all-cong : ∀ {Thy C Γ Hyp} {Φ Φ' : Formula C (extend Γ)} →
   Proof Thy (weaken-l Hyp) (Φ ⇔ Φ') →
-  ----------------------------------
+  ------------------------------------
   Proof Thy Hyp (all Φ ⇔ all Φ')
 all-cong p =
     ⇔-i
@@ -286,9 +286,9 @@ all-cong p =
             (wk (⇔-e-rl p))
             (all-lemma (Hyp-ax here)))))
 
-exists-lemma : ∀ {Thy C Γ} {Hyp} {Φ : Formula C (extend Γ)} →
+exists-lemma : ∀ {Thy C Γ Hyp} {Φ : Formula C (extend Γ)} →
   Proof Thy Hyp Φ →
-  -------------------------------
+  ---------------------------------
   Proof Thy Hyp (weaken (exists Φ))
 exists-lemma p =
   exists-i
@@ -297,7 +297,7 @@ exists-lemma p =
 
 exists-cong : ∀ {Thy C Γ} {Hyp} {Φ Φ' : Formula C (extend Γ)} →
   Proof Thy (weaken-l Hyp) (Φ ⇔ Φ') →
-  -----------------------------------
+  ------------------------------------
   Proof Thy Hyp (exists Φ ⇔ exists Φ')
 exists-cong {Φ = Φ} p =
   ⇔-i
@@ -309,33 +309,6 @@ exists-cong {Φ = Φ} p =
       (exists-e
         (Hyp-ax here)
         (exists-lemma (⇒-e (wk (wk (⇔-e-rl p))) (Hyp-ax here)))))
-
-conservation-equiv : ∀ {Thy C Γ Hyp} {x : Var Γ} {Φ : Formula C (extend Γ)} →
-  -------------------------------------------------------------------
-  Proof Thy Hyp (Φ [ svar x ]F ⇔ exists (svar zero ≈ svar (suc x) ∧ Φ))
-conservation-equiv {x = x} =
-  ⇔-i
-    (⇒-i (exists-i (svar x) (∧-i ≈-i (Hyp-ax here))))
-    (⇒-i
-      (exists-e (Hyp-ax here)
-      (transport-Proof
-        lemma
-        (≈-e (∧-e-l (Hyp-ax here))
-          (transport-Proof
-            (sym ren₀-zero-extend-ren-suc-inv-Formula)
-            (∧-e-r (Hyp-ax here)))))))
-  where
-    lemma : ∀ {C Γ} {x : Var Γ} {Φ : Formula C (extend Γ)} →
-      ren-Formula (ren₀ (suc x)) (ren-Formula (extend-ren suc) Φ) ≡ ren-Formula suc (ren-Formula (ren₀ x) Φ)
-    lemma {Φ = Φ} =
-      trans
-        (ren-comp-Formula _ _)
-        (trans
-          (cong (λ r → ren-Formula r Φ) lemma')
-          (sym (ren-comp-Formula _ _)))
-      where
-        lemma' : ∀ {Γ} {x : Var Γ} → ren₀ (suc x) ∘ extend-ren suc ≡ suc ∘ (ren₀ x)
-        lemma' = fun-ext λ {zero → refl ; (suc x) → refl}
 
 ⇔-cong-Proof : ∀ {Thy C Γ Hyp} {Φ Φ' Ψ Ψ' : Formula C Γ} →
   Proof Thy Hyp (Φ ⇔ Φ') →
@@ -364,7 +337,7 @@ conservation-equiv {x = x} =
   Proof Thy (weaken-l Hyp) (Ψ ⇔ Ψ') →
   Proof Thy (weaken-l Hyp) (Ξ ⇔ Ξ') →
   Proof Thy Hyp (Φ ⇔ exists (Ψ ∧ Ξ)) →
-  -----------------------------------
+  -------------------------------------
   Proof Thy Hyp (Φ' ⇔ exists (Ψ' ∧ Ξ'))
 ⇔-exists-∧-cong-Proof eq eq' eq'' p =
   ⇔-cong-Proof
@@ -389,7 +362,7 @@ axiom-Subst {Thy = Thy} i {Hyp = Hyp} σ =
 
 axiom-exact :
   ∀ {Thy} (i : thy-idx Thy) {Hyp} →
-  -----------------------
+  ---------------------------------
   Proof Thy Hyp (thy-axi Thy i)
 axiom-exact {Thy = Thy} i {Hyp = Hyp} = transport-Proof id-ren-Formula (axiom-ren i id-ren)
 
