@@ -8,7 +8,8 @@ open import TTheory
 open import Conservation-Lemmas
 
 
-conservation-⇐ : ∀ {C Γ hyp} {φ : formula Γ} → proof ST hyp φ → Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ)
+conservation-⇐ : ∀ {C Γ hyp} {φ : formula Γ} →
+  proof ST hyp φ → Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ)
 conservation-⇐ (axiom ext r) = all-i (all-i (axiom class≈class (λ {A → svar (suc zero) ; B → svar zero}) empty-ren))
 conservation-⇐ (hyp-ax is-in) = Hyp-ax (inj-list-mem is-in)
 conservation-⇐ lem = lem
@@ -131,7 +132,8 @@ conservation-⇒-lemma (≈-e {t = t} {u = u} eq p) =
         (elim-subst {t = t})
         (conservation-⇒-lemma p)))
 
-conservation-⇒ : ∀ {C Γ hyp} {φ : formula Γ} → Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ) → proof ST {Γ} hyp φ
+conservation-⇒ : ∀ {C Γ hyp} {φ : formula Γ} →
+  Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ) → proof ST {Γ} hyp φ
 conservation-⇒ {hyp = hyp} {φ = φ} p =
   transport-proof-hyp
     lemma2
@@ -158,8 +160,10 @@ ty ↔ ty' = (ty → ty') × (ty' → ty)
 -- The (⇐) direction of the theorem can also be seen as a kind of Soundness theorem.
 -- In that case, the (⇒) direction alone is the Conservation theorem proper.
 
-conservation : ∀ {C Γ hyp} (φ : formula Γ) → Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ) ↔ proof ST {Γ} hyp φ
+conservation : ∀ {C Γ hyp} (φ : formula Γ) →
+  Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ) ↔ proof ST {Γ} hyp φ
 conservation φ = conservation-⇒ , conservation-⇐
 
-conservation-corollary : ∀ {C Γ} (φ : formula Γ) → Proof CT {C} {Γ} [] (inj-formula φ) ↔ proof ST {Γ} [] φ
+conservation-corollary : ∀ {C Γ} (φ : formula Γ) →
+  Proof CT {C} {Γ} [] (inj-formula φ) ↔ proof ST {Γ} [] φ
 conservation-corollary φ = conservation φ
