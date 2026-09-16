@@ -27,3 +27,5 @@ This formalization was motivated by a complaint made on the [Metamath Proof Expl
 > But there is no simple way to verify automatically the soundness of our three class definitions. Instead, we must trust the relatively involved metamathematics of Levy's (or other authors') eliminability and conservation proofs that exist only on paper, at least until a sufficiently sophisticated definitional soundness checker becomes available.
 
 I hope that this formalization meaningfully contributes to greater confidence in the soundness of Metamath's development of set theory, by moving these two crucial theorems from paper to silicon.
+
+The formalization runs on Agda 2.8.0 with agda-stdlib 2.3.
