@@ -68,9 +68,6 @@ inj-formula (exists φ) = exists (inj-formula φ)
 _∷_ : {X : Set} → List X → X → List X
 tl ∷ h = h ∷l tl
 
-_++_ : {X : Set} → List X → List X → List X
-l ++ l' = l' ++l l
-
 data _∋_ {X : Set} : List X → X → Set where
   here : ∀ {x xs} → (xs ∷ x) ∋ x
   there : ∀ {x y xs} → xs ∋ x → (xs ∷ y) ∋ x

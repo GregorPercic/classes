@@ -11,11 +11,11 @@ ren : Ctx → Ctx → Set
 ren Γ Δ = Var Γ → Var Δ
 
 extend-ren : ∀ {Γ Δ} → ren Γ Δ → ren (extend Γ) (extend Δ)
-extend-ren ρ zero = zero
-extend-ren ρ (suc x) = suc (ρ x)
+extend-ren r zero = zero
+extend-ren r (suc x) = suc (r x)
 
 ren-term : ∀ {Γ Δ} → ren Γ Δ → term Γ → term Δ
-ren-term ρ (svar x) = svar (ρ x)
+ren-term r (svar x) = svar (r x)
 
 ren-formula : ∀ {Γ Δ} → ren Γ Δ → formula Γ → formula Δ
 ren-formula r ⊥ = ⊥
