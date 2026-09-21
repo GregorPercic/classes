@@ -4,8 +4,11 @@ open import Substitutions
 
 record theory : Set₁ where
   field
-    thy-idx : Set -- axiom names
-    thy-ctx : thy-idx → Ctx -- set variables appearing in the axiom
+    -- axiom names
+    thy-idx : Set
+    -- set variables appearing in the axiom
+    thy-ctx : thy-idx → Ctx
+    -- axiom formula
     thy-axi : (i : thy-idx) → formula (thy-ctx i)
 
 open theory public

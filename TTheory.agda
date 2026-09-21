@@ -4,9 +4,13 @@ open import Substitutions
 
 record Theory : Set₂ where
   field
-    thy-idx : Set₁ -- axiom names
-    thy-cls : thy-idx → Set -- class variables appearing in the axiom
-    thy-ctx : thy-idx → Ctx -- set variables appearing in the axiom
+    -- axiom names
+    thy-idx : Set₁
+    -- class variables appearing in the axiom
+    thy-cls : thy-idx → Set
+    -- set variables appearing in the axiom
+    thy-ctx : thy-idx → Ctx
+    -- axiom formula
     thy-axi : (i : thy-idx) → Formula (thy-cls i) (thy-ctx i)
 
 open Theory public
