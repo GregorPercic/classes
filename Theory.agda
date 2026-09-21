@@ -13,15 +13,14 @@ open theory public
 
 -- The basic first-order set theory with Extensionality as its only axiom
 
+ST : theory
+
 data idxST : Set where
+  -- the axiom of extensionality: ∀x∀y.(x = y ⇔ ∀z.(z ∈ x ⇔ z ∈ y))
   ext : idxST
 
-ST : theory
 thy-idx ST = idxST
-
 thy-ctx ST ext = ⟨⟩
-
--- The axiom of extensionality: ∀x∀y.(x = y ⇔ ∀z.(z ∈ x ⇔ z ∈ y))
 thy-axi ST ext =
   all (all
     (svar (suc zero) ≈ svar zero
