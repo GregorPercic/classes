@@ -19,7 +19,8 @@ open theory public
 ST : theory
 
 data idxST : Set where
-  -- the axiom of extensionality: ∀x∀y.(x = y ⇔ ∀z.(z ∈ x ⇔ z ∈ y))
+  -- the axiom of extensionality:
+  -- ∀x∀y.(x = y ⇔ ∀z.(z ∈ x ⇔ z ∈ y))
   ext : idxST
 
 thy-idx ST = idxST
@@ -28,4 +29,7 @@ thy-axi ST ext =
   all (all
     (svar (suc zero) ≈ svar zero
       ⇔
-    all (svar zero ∈ svar (suc (suc zero)) ⇔ svar zero ∈ svar (suc zero))))
+    all
+      (svar zero ∈ svar (suc (suc zero))
+        ⇔
+      svar zero ∈ svar (suc zero))))
