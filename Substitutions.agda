@@ -98,10 +98,12 @@ _[_]F : ∀ {C Γ} → Formula C (extend Γ) → term Γ → Formula C Γ
 
 -- Functions for extending formulas
 
-extend-ren-suc-formula : ∀ {Γ} → formula (extend Γ) → formula (extend (extend Γ))
+extend-ren-suc-formula :
+  ∀ {Γ} → formula (extend Γ) → formula (extend (extend Γ))
 extend-ren-suc-formula = ren-formula (extend-ren suc)
 
-extend-ren-suc-Formula : ∀ {C Γ} → Formula C (extend Γ) → Formula C (extend (extend Γ))
+extend-ren-suc-Formula :
+  ∀ {C Γ} → Formula C (extend Γ) → Formula C (extend (extend Γ))
 extend-ren-suc-Formula = ren-Formula (extend-ren suc)
 
 -- Function extensionality

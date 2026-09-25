@@ -8,7 +8,8 @@ weaken = ren-Formula suc
 weaken-l : ∀ {C Γ} → List (Formula C Γ) → List (Formula C (extend Γ))
 weaken-l l = map weaken l
 
-data Proof (Thy : Theory) {C : Set} : {Γ : Ctx} → List (Formula C Γ) → Formula C Γ → Set₁ where
+data Proof (Thy : Theory) {C : Set} :
+  {Γ : Ctx} → List (Formula C Γ) → Formula C Γ → Set₁ where
   -- Non-structural rules
   
   axiom :
@@ -471,9 +472,9 @@ subst-dist-⇔ x p = all-e (svar x) (all-i p)
 eq-to-⇔ : ∀ {Thy C Γ Hyp} {Φ Ψ : Formula Γ C} → Φ ≡ Ψ → Proof Thy Hyp (Φ ⇔ Ψ)
 eq-to-⇔ refl = ⇔-refl
 
-⇔-∈-subst : ∀ {Γ} {Hyp} {Φ : Formula₀ (extend Γ)} → (y : Var (extend Γ)) →
-  Proof CT Hyp (svar y ∈ class (extend-ren-suc-Formula Φ) ⇔ (extend-ren-suc-Formula Φ) [ svar y ]F)
-⇔-∈-subst {Γ = Γ} {Φ = Φ} y = axiom-exact (set∈class 𝟘 (extend Γ) y (extend-ren-suc-Formula Φ))
+⇔-∈-subst : ∀ {C Γ Hyp} (Φ : Formula C (extend Γ)) → (y : Var Γ) →
+  Proof CT Hyp (svar y ∈ class Φ ⇔ Φ [ svar y ]F)
+⇔-∈-subst {C = C} {Γ = Γ} Φ y = axiom-exact (set∈class C Γ y Φ)
 
 wk-from-empty : ∀ {Thy C Γ Hyp} {Φ : Formula C Γ} →
   Proof Thy [] Φ →

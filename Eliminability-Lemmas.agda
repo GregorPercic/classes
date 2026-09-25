@@ -11,12 +11,18 @@ elim (class Φ ≈ class Ψ) = all (elim Φ ⇔ elim Ψ)
 elim (svar x ∈ svar y) = svar x ∈ svar y
 elim (svar x ∈ class Φ) = (elim Φ) [ svar x ]f
 elim (class Φ ∈ svar x) =
-  exists (all (svar zero ∈ svar (suc zero) ⇔ extend-ren-suc-formula (elim Φ)) ∧ svar zero ∈ svar (suc x))
+  exists (all
+    (svar zero ∈ svar (suc zero)
+      ⇔
+    extend-ren-suc-formula (elim Φ)) ∧ svar zero ∈ svar (suc x))
 elim (class Φ ∈ class Ψ) =
-  exists (all (svar zero ∈ svar (suc zero) ⇔ extend-ren-suc-formula (elim Φ)) ∧ elim Ψ)
+  exists (all
+    (svar zero ∈ svar (suc zero)
+      ⇔
+    extend-ren-suc-formula (elim Φ)) ∧ elim Ψ)
 elim (Φ ∧ Ψ) = elim Φ ∧ elim Ψ
-elim (Φ ⇔ Ψ) = elim Φ ⇔ elim Ψ
 elim (Φ ⇒ Ψ) = elim Φ ⇒ elim Ψ
+elim (Φ ⇔ Ψ) = elim Φ ⇔ elim Ψ
 elim (all Φ) = all (elim Φ)
 elim (exists Φ) = exists (elim Φ)
 

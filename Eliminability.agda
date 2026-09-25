@@ -5,7 +5,8 @@ open import PProof
 open import Eliminability-Lemmas
 
 
-eliminability-main-theorem : ∀ {Γ} (Φ : Formula₀ Γ) → Proof CT [] (Φ ⇔ (inj-formula (elim Φ)))
+eliminability-main-theorem : ∀ {Γ} (Φ : Formula₀ Γ) →
+  Proof CT [] (Φ ⇔ (inj-formula (elim Φ)))
 eliminability-main-theorem ⊥ = ⇔-refl
 eliminability-main-theorem (svar x ≈ svar y) = ⇔-refl
 eliminability-main-theorem {Γ = Γ} (svar x ≈ class Φ) = ⇔-all-⇔-cong-Proof ⇔-refl ⇔-refl lemma2 lemma1
@@ -20,7 +21,7 @@ eliminability-main-theorem {Γ = Γ} (svar x ≈ class Φ) = ⇔-all-⇔-cong-Pr
     lemma2 =
       ⇔-trans
         (⇔-trans
-          (⇔-∈-subst zero)
+          (⇔-∈-subst Φ+ zero)
           (eq-to-⇔ subst-zero-eq-Formula))
         (eliminability-main-theorem Φ)
 eliminability-main-theorem {Γ = Γ} (class Φ ≈ svar x) = ⇔-all-⇔-cong-Proof ⇔-refl lemma2 ⇔-refl lemma1
@@ -35,7 +36,7 @@ eliminability-main-theorem {Γ = Γ} (class Φ ≈ svar x) = ⇔-all-⇔-cong-Pr
     lemma2 =
       ⇔-trans
         (⇔-trans
-          (⇔-∈-subst zero)
+          (⇔-∈-subst Φ+ zero)
           (eq-to-⇔ subst-zero-eq-Formula))
         (eliminability-main-theorem Φ)
 eliminability-main-theorem {Γ = Γ} (class Φ ≈ class Ψ) = ⇔-all-⇔-cong-Proof ⇔-refl lemma2 lemma3 lemma1
@@ -53,7 +54,7 @@ eliminability-main-theorem {Γ = Γ} (class Φ ≈ class Ψ) = ⇔-all-⇔-cong-
     lemma2 =
       ⇔-trans
         (⇔-trans
-          (⇔-∈-subst zero)
+          (⇔-∈-subst Φ+ zero)
           (eq-to-⇔ subst-zero-eq-Formula))
         (eliminability-main-theorem Φ)
     
@@ -61,7 +62,7 @@ eliminability-main-theorem {Γ = Γ} (class Φ ≈ class Ψ) = ⇔-all-⇔-cong-
     lemma3 =
       ⇔-trans
         (⇔-trans
-          (⇔-∈-subst zero)
+          (⇔-∈-subst Ψ+ zero)
           (eq-to-⇔ subst-zero-eq-Formula))
         (eliminability-main-theorem Ψ)
 eliminability-main-theorem (svar x ∈ svar y) = ⇔-refl
@@ -73,7 +74,7 @@ eliminability-main-theorem {Γ = Γ} (svar x ∈ class Φ) =
     lemma : Proof CT [] (svar x ∈ class Φ ⇔ (inj-formula (elim Φ)) [ svar x ]F)
     lemma =
       ⇔-trans
-        (axiom-exact (set∈class 𝟘 Γ x Φ))
+        (⇔-∈-subst Φ x)
         (subst-dist-⇔ x (eliminability-main-theorem Φ))
 eliminability-main-theorem {Γ = Γ} (class Φ ∈ svar x) =
   ⇔-exists-∧-cong-Proof
@@ -95,7 +96,7 @@ eliminability-main-theorem {Γ = Γ} (class Φ ∈ svar x) =
     lemma2 = axiom class≈class (λ {A → svar zero ; B → class Φ+}) empty-ren
 
     lemma3 : Proof CT [] ((svar zero ∈ class Φ++) ⇔ Φ+)
-    lemma3 = ⇔-trans (⇔-∈-subst zero) (eq-to-⇔ subst-zero-eq-Formula)
+    lemma3 = ⇔-trans (⇔-∈-subst Φ++ zero) (eq-to-⇔ subst-zero-eq-Formula)
 
     lemma4 : Proof CT [] (Φ+ ⇔ inj-formula (extend-ren-suc-formula (elim Φ)))
     lemma4 = ≡-subst (λ Ξ → Proof CT [] (Φ+ ⇔ Ξ)) lemma4-2 lemma4-1
@@ -131,7 +132,7 @@ eliminability-main-theorem {Γ = Γ} (class Φ ∈ class Ψ) =
     lemma2 = axiom class≈class (λ {A → svar zero ; B → class Φ+}) empty-ren
 
     lemma3 : Proof CT [] ((svar zero ∈ class Φ++) ⇔ Φ+)
-    lemma3 = ⇔-trans (⇔-∈-subst zero) (eq-to-⇔ subst-zero-eq-Formula)
+    lemma3 = ⇔-trans (⇔-∈-subst Φ++ zero) (eq-to-⇔ subst-zero-eq-Formula)
 
     lemma4 : Proof CT [] (Φ+ ⇔ inj-formula (extend-ren-suc-formula (elim Φ)))
     lemma4 = ≡-subst (λ Ξ → Proof CT [] (Φ+ ⇔ Ξ)) lemma4-2 lemma4-1
@@ -149,7 +150,7 @@ eliminability-main-theorem {Γ = Γ} (class Φ ∈ class Ψ) =
     lemma6 =
       ⇔-trans
         (⇔-trans
-          (⇔-∈-subst zero)
+          (⇔-∈-subst Ψ+ zero)
           (eq-to-⇔ subst-zero-eq-Formula))
         (eliminability-main-theorem Ψ)
 eliminability-main-theorem (Φ ∧ Ψ) = ∧-cong (eliminability-main-theorem Φ) (eliminability-main-theorem Ψ)

@@ -9,7 +9,8 @@ weaken = ren-formula suc
 weaken-l : ∀ {Γ} → List (formula Γ) → List (formula (extend Γ))
 weaken-l l = map weaken l
 
-data proof (thy : theory) : {Γ : Ctx} → List (formula Γ) → formula Γ → Set where
+data proof (thy : theory) :
+  {Γ : Ctx} → List (formula Γ) → formula Γ → Set where
   -- Non-structural rules
 
   axiom :
