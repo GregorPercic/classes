@@ -9,7 +9,8 @@ open import Conservation-Lemmas
 
 
 conservation-⇐ : ∀ {C Γ hyp} {φ : formula Γ} →
-  proof ST hyp φ → Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ)
+  proof ST hyp φ →
+  Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ)
 conservation-⇐ (axiom ext r) = all-i (all-i (axiom class≈class (λ {A → svar (suc zero) ; B → svar zero}) empty-ren))
 conservation-⇐ (hyp-ax is-in) = Hyp-ax (inj-list-mem is-in)
 conservation-⇐ lem = lem
@@ -43,8 +44,10 @@ conservation-⇐ (≈-e {t = t} {u = u} p p') =
         (inj-formula-subst {t = t})
         (conservation-⇐ p')))
 
-conservation-⇒-lemma : ∀ {Γ Hyp} {Φ : Formula₀ Γ} → Proof CT {𝟘} {Γ} Hyp Φ → proof ST {Γ} (map elim Hyp) (elim Φ)
-conservation-⇒-lemma (axiom (set∈class C Γ y Ψ) σ r) =
+conservation-⇒-main-theorem : ∀ {Γ Hyp} {Φ : Formula₀ Γ} →
+  Proof CT {𝟘} {Γ} Hyp Φ →
+  proof ST {Γ} (map elim Hyp) (elim Φ)
+conservation-⇒-main-theorem (axiom (set∈class C Γ y Ψ) σ r) =
   Proof.eq-to-⇔ (lemma {y = y} {Φ = Ψ} {r = r} {σ = σ})
   where
     lemma : ∀ {C Γ Δ} {y : Var Γ} {Φ : Formula C (extend Γ)} {r : ren Γ Δ} {σ : Subst Δ C 𝟘} → 
@@ -61,7 +64,7 @@ conservation-⇒-lemma (axiom (set∈class C Γ y Ψ) σ r) =
             (cong
               (λ Ξ → Subst-Formula σ Ξ)
               (ren₀-under-extend-ren r))))
-conservation-⇒-lemma (axiom class∈class σ r) with σ A | σ B
+conservation-⇒-main-theorem (axiom class∈class σ r) with σ A | σ B
 ... | svar x  | svar y = Proof.conservation-equiv
 ... | svar x  | class Φ =
   transport-proof
@@ -79,7 +82,7 @@ conservation-⇒-lemma (axiom class∈class σ r) with σ A | σ B
       (λ Ξ Ξ' → exists (all (svar zero ∈ svar (suc zero) ⇔ Ξ) ∧ Ξ'))
       (sym (elim-ren {Φ = Φ} (extend-ren suc)))
       (sym (subst-elim-extend-ren-eq {Φ = Ψ})))
-conservation-⇒-lemma {Γ = Γ} (axiom class≈class σ r) with σ A | σ B
+conservation-⇒-main-theorem {Γ = Γ} (axiom class≈class σ r) with σ A | σ B
 ... | svar x  | svar y = all-e (svar y) (all-e (svar x) (axiom ext empty-ren))
 ... | svar x  | class Φ =
   Proof.eq-to-⇔
@@ -97,49 +100,50 @@ conservation-⇒-lemma {Γ = Γ} (axiom class≈class σ r) with σ A | σ B
       (λ Ξ Ξ' → all (Ξ ⇔ Ξ'))
       (sym (subst-elim-extend-ren-eq {Φ = Φ}))
       (sym (subst-elim-extend-ren-eq {Φ = Ψ})))
-conservation-⇒-lemma (Hyp-ax is-in) = hyp-ax (elim-list-mem is-in)
-conservation-⇒-lemma lem = lem
-conservation-⇒-lemma (≈-i {t = svar x}) = ≈-i
-conservation-⇒-lemma (≈-i {t = class Φ}) = all-⇔-refl
-conservation-⇒-lemma (∧-i p p') = ∧-i (conservation-⇒-lemma p) (conservation-⇒-lemma p')
-conservation-⇒-lemma (⇒-i p) = ⇒-i (conservation-⇒-lemma p)
-conservation-⇒-lemma (⇔-i p p') = ⇔-i (conservation-⇒-lemma p) (conservation-⇒-lemma p')
-conservation-⇒-lemma (all-i p) = all-i (transport-proof-hyp Hyp-elim-lemma (conservation-⇒-lemma p))
-conservation-⇒-lemma (exists-i t p) = exists-i t (transport-proof (elim-subst {t = t}) (conservation-⇒-lemma p))
-conservation-⇒-lemma (⊥-e p) = ⊥-e (conservation-⇒-lemma p)
-conservation-⇒-lemma (∧-e-l p) = ∧-e-l (conservation-⇒-lemma p)
-conservation-⇒-lemma (∧-e-r p) = ∧-e-r (conservation-⇒-lemma p)
-conservation-⇒-lemma (⇒-e p p') = ⇒-e (conservation-⇒-lemma p) (conservation-⇒-lemma p')
-conservation-⇒-lemma (⇔-e-lr p) = ⇔-e-lr (conservation-⇒-lemma p)
-conservation-⇒-lemma (⇔-e-rl p) = ⇔-e-rl (conservation-⇒-lemma p)
-conservation-⇒-lemma (exists-e {Ψ = Ψ} p p') =
+conservation-⇒-main-theorem (Hyp-ax is-in) = hyp-ax (elim-list-mem is-in)
+conservation-⇒-main-theorem lem = lem
+conservation-⇒-main-theorem (≈-i {t = svar x}) = ≈-i
+conservation-⇒-main-theorem (≈-i {t = class Φ}) = all-⇔-refl
+conservation-⇒-main-theorem (∧-i p p') = ∧-i (conservation-⇒-main-theorem p) (conservation-⇒-main-theorem p')
+conservation-⇒-main-theorem (⇒-i p) = ⇒-i (conservation-⇒-main-theorem p)
+conservation-⇒-main-theorem (⇔-i p p') = ⇔-i (conservation-⇒-main-theorem p) (conservation-⇒-main-theorem p')
+conservation-⇒-main-theorem (all-i p) = all-i (transport-proof-hyp Hyp-elim-lemma (conservation-⇒-main-theorem p))
+conservation-⇒-main-theorem (exists-i t p) = exists-i t (transport-proof (elim-subst {t = t}) (conservation-⇒-main-theorem p))
+conservation-⇒-main-theorem (⊥-e p) = ⊥-e (conservation-⇒-main-theorem p)
+conservation-⇒-main-theorem (∧-e-l p) = ∧-e-l (conservation-⇒-main-theorem p)
+conservation-⇒-main-theorem (∧-e-r p) = ∧-e-r (conservation-⇒-main-theorem p)
+conservation-⇒-main-theorem (⇒-e p p') = ⇒-e (conservation-⇒-main-theorem p) (conservation-⇒-main-theorem p')
+conservation-⇒-main-theorem (⇔-e-lr p) = ⇔-e-lr (conservation-⇒-main-theorem p)
+conservation-⇒-main-theorem (⇔-e-rl p) = ⇔-e-rl (conservation-⇒-main-theorem p)
+conservation-⇒-main-theorem (exists-e {Ψ = Ψ} p p') =
   exists-e
-    (conservation-⇒-lemma p)
+    (conservation-⇒-main-theorem p)
     (transport-proof-hyp
       (cong₂ _∷_ Hyp-elim-lemma refl)
       (transport-proof
         (elim-ren {Φ = Ψ} suc)
-        (conservation-⇒-lemma p')))
-conservation-⇒-lemma (all-e t p) = transport-proof (sym (elim-subst {t = t})) (all-e t (conservation-⇒-lemma p))
-conservation-⇒-lemma (≈-e {t = t} {u = u} eq p) =
+        (conservation-⇒-main-theorem p')))
+conservation-⇒-main-theorem (all-e t p) = transport-proof (sym (elim-subst {t = t})) (all-e t (conservation-⇒-main-theorem p))
+conservation-⇒-main-theorem (≈-e {t = t} {u = u} eq p) =
   transport-proof
     (sym (elim-subst {t = u}))
     (≈-e {t = t} {u = u}
       (transport-proof
         elim-inj-inv
-        (conservation-⇒-lemma eq))
+        (conservation-⇒-main-theorem eq))
       (transport-proof
         (elim-subst {t = t})
-        (conservation-⇒-lemma p)))
+        (conservation-⇒-main-theorem p)))
 
 conservation-⇒ : ∀ {C Γ hyp} {φ : formula Γ} →
-  Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ) → proof ST {Γ} hyp φ
+  Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ) →
+  proof ST {Γ} hyp φ
 conservation-⇒ {hyp = hyp} {φ = φ} p =
   transport-proof-hyp
     lemma2
     (transport-proof
       lemma1
-      (conservation-⇒-lemma (Subst-Proof magic-Subst p)))
+      (conservation-⇒-main-theorem (Subst-Proof magic-Subst p)))
   where
     lemma1 : ∀ {Γ} {φ : formula Γ} → elim (Subst-Formula magic-Subst (inj-formula φ)) ≡ φ
     lemma1 {φ = φ} =
@@ -161,7 +165,9 @@ ty ↔ ty' = (ty → ty') × (ty' → ty)
 -- In that case, the (⇒) direction alone is the Conservation theorem proper.
 
 conservation : ∀ {C Γ hyp} (φ : formula Γ) →
-  Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ) ↔ proof ST {Γ} hyp φ
+  Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ)
+    ↔
+  proof ST {Γ} hyp φ
 conservation φ = conservation-⇒ , conservation-⇐
 
 conservation-corollary : ∀ {C Γ} (φ : formula Γ) →

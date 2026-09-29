@@ -374,7 +374,8 @@ Hyp-weaken-l-lemma-ren {Hyp = Φ ∷l Hyp} r =
   cong₂ _∷l_ (sym (extend-ren-r-suc-lemma-Formula r)) (Hyp-weaken-l-lemma-ren r)
 
 ren-Proof : ∀ {Thy C Γ Δ Hyp} {Φ : Formula C Γ} (r : ren Γ Δ) →
-  Proof Thy Hyp Φ → Proof Thy (map (ren-Formula r) Hyp) (ren-Formula r Φ)
+  Proof Thy Hyp Φ →
+  Proof Thy (map (ren-Formula r) Hyp) (ren-Formula r Φ)
 ren-Proof {Thy = Thy} {Hyp = Hyp} r (axiom i σ r') =
   transport-Proof
     (sym
@@ -426,8 +427,10 @@ Hyp-weaken-l-lemma-Subst : ∀ {C D Γ Hyp} (σ : Subst Γ C D) →
 Hyp-weaken-l-lemma-Subst {Hyp = []} σ = refl
 Hyp-weaken-l-lemma-Subst {Hyp = Φ ∷l Hyp} σ = cong₂ _∷l_ (extend-Subst-suc-lemma σ) (Hyp-weaken-l-lemma-Subst σ)
 
-Subst-Proof : ∀ {Thy C D Γ Hyp} {Φ : Formula C Γ} (σ : Subst Γ C D) →
-  Proof Thy Hyp Φ → Proof Thy (map (Subst-Formula σ) Hyp) (Subst-Formula σ Φ)
+Subst-Proof : ∀ {Thy C D Γ Hyp} {Φ : Formula C Γ}
+  (σ : Subst Γ C D) →
+  Proof Thy Hyp Φ →
+  Proof Thy (map (Subst-Formula σ) Hyp) (Subst-Formula σ Φ)
 Subst-Proof σ (axiom i σ' r) = transport-Proof (sym (Subst-comp-Formula σ' σ)) (axiom i (σ ∘c σ') r)
 Subst-Proof σ (Hyp-ax is-in) = Hyp-ax (Subst-list-mem σ is-in)
 Subst-Proof σ lem = lem

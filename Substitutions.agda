@@ -109,7 +109,8 @@ extend-ren-suc-Formula = ren-Formula (extend-ren suc)
 -- Function extensionality
 
 postulate
-  fun-ext : {A B : Set} {f g : A → B} → ((x : A) → f x ≡ g x) → f ≡ g
+  fun-ext : {A B : Set} {f g : A → B} →
+    ((x : A) → f x ≡ g x) → f ≡ g
 
 -- Lemmas involving renamings and class variable substitutions
 
@@ -187,7 +188,8 @@ mutual
         (extend-ren-functorial r r')
         (ren-comp-Formula {Φ = Φ} (extend-ren r) (extend-ren r')))
 
-  ren-comp-Formula : ∀ {C Γ Δ Ω} {Φ : Formula C Γ} (r : ren Γ Δ) (r' : ren Δ Ω) →
+  ren-comp-Formula : ∀ {C Γ Δ Ω} {Φ : Formula C Γ}
+    (r : ren Γ Δ) (r' : ren Δ Ω) →
     ren-Formula r' (ren-Formula r Φ) ≡ ren-Formula (r' ∘ r) Φ
   ren-comp-Formula {Φ = ⊥} r r' = refl
   ren-comp-Formula {Φ = t ≈ u} r r' = cong₂ _≈_ (ren-comp-Term r r') (ren-comp-Term r r')
@@ -375,7 +377,8 @@ mutual
         (Subst-comp-Formula (extend-Subst σ) (extend-Subst σ'))
         (cong (λ σ → Subst-Formula σ Φ) (extend-Subst-comp-lemma σ σ')))
 
-  Subst-comp-Formula : ∀ {C D E Γ} {Φ : Formula C Γ} (σ : Subst Γ C D) (σ' : Subst Γ D E) →
+  Subst-comp-Formula : ∀ {C D E Γ} {Φ : Formula C Γ}
+    (σ : Subst Γ C D) (σ' : Subst Γ D E) →
     Subst-Formula σ' (Subst-Formula σ Φ) ≡ Subst-Formula (σ' ∘c σ) Φ
   Subst-comp-Formula {Φ = ⊥} σ σ' = refl
   Subst-comp-Formula {Φ = t ≈ u} σ σ' = cong₂ _≈_ (Subst-comp-Term {t = t} σ σ') (Subst-comp-Term {t = u} σ σ')

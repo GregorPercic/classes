@@ -162,14 +162,20 @@ eliminability-main-theorem (exists Φ) = exists-cong (eliminability-main-theorem
 
 -- The Eliminability Theorem
 
-eliminability : ∀ {C Γ} (Φ : Formula C Γ) (σ : Subst Γ C 𝟘) →
-  Proof CT {𝟘} {Γ} [] (Subst-Formula σ Φ ⇔ inj-formula (elim (Subst-Formula σ Φ)))
+eliminability :
+  ∀ {C Γ} (Φ : Formula C Γ) (σ : Subst Γ C 𝟘) →
+  Proof CT {𝟘} {Γ} []
+  (Subst-Formula σ Φ ⇔ inj-formula (elim (Subst-Formula σ Φ)))
 eliminability Φ σ = eliminability-main-theorem (Subst-Formula σ Φ)
 
-eliminability-Hyp : ∀ {C Γ Hyp} (Φ : Formula C Γ) (σ : Subst Γ C 𝟘) →
-  Proof CT {𝟘} {Γ} Hyp (Subst-Formula σ Φ ⇔ inj-formula (elim (Subst-Formula σ Φ)))
+eliminability-Hyp :
+  ∀ {C Γ Hyp} (Φ : Formula C Γ) (σ : Subst Γ C 𝟘) →
+  Proof CT {𝟘} {Γ} Hyp
+  (Subst-Formula σ Φ ⇔ inj-formula (elim (Subst-Formula σ Φ)))
 eliminability-Hyp Φ σ = wk-from-empty (eliminability Φ σ)
 
-existential-eliminability : ∀ {C Γ Hyp} (Φ : Formula C Γ) (σ : Subst Γ C 𝟘) →
+existential-eliminability :
+  ∀ {C Γ Hyp} (Φ : Formula C Γ) (σ : Subst Γ C 𝟘) →
   ∃[ φ ] Proof CT {𝟘} {Γ} Hyp (Subst-Formula σ Φ ⇔ inj-formula φ)
-existential-eliminability Φ σ = elim (Subst-Formula σ Φ) , eliminability-Hyp Φ σ
+existential-eliminability Φ σ =
+  elim (Subst-Formula σ Φ) , eliminability-Hyp Φ σ
