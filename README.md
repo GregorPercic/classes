@@ -29,3 +29,19 @@ This formalization was motivated by a complaint made on the [Metamath Proof Expl
 I hope that this formalization meaningfully contributes to greater confidence in the soundness of Metamath's development of set theory, by moving these two crucial theorems from paper to silicon.
 
 The formalization runs on Agda 2.8.0 with agda-stdlib 2.3.
+
+## Files
+
+| File | Content |
+| -------- | ------- |
+| `Syntax.agda` | definition of syntax of the languages of sets and classes |
+| `Substitutions.agda` | definitions of renamings, substitutions of class variables, single set variable substitutions, and their properties |
+| `Theory.agda` | definition of a theory of sets, the definition of the theory of sets ST |
+| `TTheory.agda` | definition of a theory of classes, the definition of the theory of classes CT |
+| `Proof.agda` | definition of the logical calculus of sets and its derived rules |
+| `PProof.agda` | definition of the logical calculus of classes and its derived rules |
+| `Eliminability-Lemmas.agda` | lemmas for the eliminability theorem |
+| `Eliminability.agda` | proof of the eliminability theorem |
+| `Conservation-Lemmas.agda` | lemmas for the conservation theorem |
+| `Conservation.agda` | proof of the conservation theorem |
+| `All.agda` | imports all other files; by type-checking this file, Agda checks the entire project |
