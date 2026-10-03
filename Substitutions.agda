@@ -64,20 +64,27 @@ extend-Subst : ∀ {C D Γ} → Subst Γ C D → Subst (extend Γ) C D
 extend-Subst σ = comp-rS suc σ
 
 mutual
-  Subst-Term : ∀ {C D Γ} → Subst Γ C D → Term C Γ → Term D Γ
+  Subst-Term :
+    ∀ {C D Γ} → Subst Γ C D → Term C Γ → Term D Γ
   Subst-Term σ (svar x) = svar x
   Subst-Term σ (cvar c) = σ c
   Subst-Term σ (class Φ) = class (Subst-Formula (extend-Subst σ) Φ)
 
-  Subst-Formula : ∀ {C D Γ} → Subst Γ C D → Formula C Γ → Formula D Γ
+  Subst-Formula :
+    ∀ {C D Γ} → Subst Γ C D → Formula C Γ → Formula D Γ
   Subst-Formula σ ⊥ = ⊥
   Subst-Formula σ (t ≈ u) = (Subst-Term σ t) ≈ (Subst-Term σ u)
   Subst-Formula σ (t ∈ u) = (Subst-Term σ t) ∈ (Subst-Term σ u)
-  Subst-Formula σ (Φ ∧ Ψ) = (Subst-Formula σ Φ) ∧ (Subst-Formula σ Ψ)
-  Subst-Formula σ (Φ ⇒ Ψ) = (Subst-Formula σ Φ) ⇒ (Subst-Formula σ Ψ)
-  Subst-Formula σ (Φ ⇔ Ψ) = (Subst-Formula σ Φ) ⇔ (Subst-Formula σ Ψ)
-  Subst-Formula σ (all Φ) = all (Subst-Formula (extend-Subst σ) Φ)
-  Subst-Formula σ (exists Φ) = exists (Subst-Formula (extend-Subst σ) Φ)
+  Subst-Formula σ (Φ ∧ Ψ) =
+    (Subst-Formula σ Φ) ∧ (Subst-Formula σ Ψ)
+  Subst-Formula σ (Φ ⇒ Ψ) =
+    (Subst-Formula σ Φ) ⇒ (Subst-Formula σ Ψ)
+  Subst-Formula σ (Φ ⇔ Ψ) =
+    (Subst-Formula σ Φ) ⇔ (Subst-Formula σ Ψ)
+  Subst-Formula σ (all Φ) =
+    all (Subst-Formula (extend-Subst σ) Φ)
+  Subst-Formula σ (exists Φ) =
+    exists (Subst-Formula (extend-Subst σ) Φ)
 
 _∘c_ : ∀ {C D E Γ} → Subst Γ D E → Subst Γ C D → Subst Γ C E
 (σ' ∘c σ) c = Subst-Term σ' (σ c)

@@ -12,7 +12,7 @@ conservation-⇐ : ∀ {C Γ hyp} {φ : formula Γ} →
   proof ST hyp φ →
   Proof CT {C} {Γ} (inj-formula-l hyp) (inj-formula φ)
 conservation-⇐ (axiom ext r) = all-i (all-i (axiom class≈class (λ {A → svar (suc zero) ; B → svar zero}) empty-ren))
-conservation-⇐ (hyp-ax is-in) = Hyp-ax (inj-list-mem is-in)
+conservation-⇐ (hyp-ax is-in) = hyp-ax (inj-list-mem is-in)
 conservation-⇐ lem = lem
 conservation-⇐ ≈-i = ≈-i
 conservation-⇐ (∧-i p p') = ∧-i (conservation-⇐ p) (conservation-⇐ p')
@@ -100,7 +100,7 @@ conservation-⇒-main-theorem {Γ = Γ} (axiom class≈class σ r) with σ A | �
       (λ Ξ Ξ' → all (Ξ ⇔ Ξ'))
       (sym (subst-elim-extend-ren-eq {Φ = Φ}))
       (sym (subst-elim-extend-ren-eq {Φ = Ψ})))
-conservation-⇒-main-theorem (Hyp-ax is-in) = hyp-ax (elim-list-mem is-in)
+conservation-⇒-main-theorem (hyp-ax is-in) = hyp-ax (elim-list-mem is-in)
 conservation-⇒-main-theorem lem = lem
 conservation-⇒-main-theorem (≈-i {t = svar x}) = ≈-i
 conservation-⇒-main-theorem (≈-i {t = class Φ}) = all-⇔-refl
